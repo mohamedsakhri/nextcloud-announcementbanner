@@ -1,17 +1,16 @@
-
 # Announcement Banner App
 
 The Announcement Banner App adds a customizable notification bar at the top of every Nextcloud page. You can configure the message, color scheme, optional “read more” link, and whether users can dismiss the banner. A live preview of your banner is shown in the admin settings.
 
 ## Screenshots
 
-+**Success Banner Example**
+**Success Banner Example**
 
 ![Success Banner](screenshots/banner-success.png)
 
-**Maintenance Warning Example**
+**Warning Banner Example**
 
-![Maintenance Banner](screenshots/banner-maintenance.png)
+![Maintenance Banner](screenshots/banner-warning.png)
 
 ## Features
 
