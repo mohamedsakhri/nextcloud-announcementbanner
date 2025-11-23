@@ -1,0 +1,27 @@
+{
+    "translations": {
+        "Announcement banner": "Bannière d'annonce",
+        "The Announcement Banner app displays a customizable notification bar on every Nextcloud page, with your own message, a visual theme to highlight the type of announcement, and an optional link for more details. It offers a real-time preview of the banner, and your changes are shown to all users once they are saved.": "L’application Announcement Banner affiche sur chaque page Nextcloud une barre de notification personnalisable avec votre message, un thème visuel pour mettre en valeur le type d’annonce et un lien facultatif pour plus de détails. Elle offre une prévisualisation en temps réel, et vos modifications sont visibles par tous les utilisateurs une fois enregistrées.",
+        "Show an announcement banner at the top of every page": "Afficher une bannière d'annonce en haut de chaque page",
+        "Banner message": "Message de la bannière",
+        "What do you need everyone to know?": "Que doit savoir tout le monde ?",
+        "Color scheme": "Schéma de couleurs",
+        "Danger": "Danger",
+        "Success": "Succès",
+        "Warning": "Avertissement",
+        "Info": "Info",
+        "Enable banner": "Activer la bannière",
+        "Show dismiss icon (users can hide the banner)": "Afficher l’icône de fermeture (les utilisateurs peuvent masquer la bannière)",
+        "Banner disabled": "Bannière désactivée",
+        "Live preview": "Aperçu en direct",
+        "Read more label": "Libellé Lire la suite",
+        "Optional link label, e.g. “Read more”": "Libellé facultatif, ex. « Lire la suite »",
+        "Read more link": "Lien Lire la suite",
+        "Add a link for more details": "Ajouter un lien pour plus de détails",
+        "Save banner": "Enregistrer la bannière",
+        "Banner settings saved": "Paramètres de la bannière enregistrés",
+        "Unable to save banner settings": "Impossible d’enregistrer les paramètres de la bannière",
+        "Dismiss banner": "Fermer la bannière"
+    },
+    "pluralForm": "nplurals=2; plural=(n > 1);"
+}

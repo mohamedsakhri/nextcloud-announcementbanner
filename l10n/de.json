@@ -1,0 +1,27 @@
+{
+    "translations": {
+        "Announcement banner": "Ankündigungsbanner",
+        "The Announcement Banner app displays a customizable notification bar on every Nextcloud page, with your own message, a visual theme to highlight the type of announcement, and an optional link for more details. It offers a real-time preview of the banner, and your changes are shown to all users once they are saved.": "Die Announcement Banner App zeigt auf jeder Nextcloud-Seite eine anpassbare Hinweisleiste mit eigener Nachricht, einem visuellen Thema zur Hervorhebung des Ankündigungstyps und einem optionalen Link für weitere Details. Eine Live-Vorschau zeigt das Banner sofort, und nach dem Speichern werden die Änderungen allen Nutzenden angezeigt.",
+        "Show an announcement banner at the top of every page": "Zeigt ein Ankündigungsbanner oben auf jeder Seite",
+        "Banner message": "Bannernachricht",
+        "What do you need everyone to know?": "Was sollen alle wissen?",
+        "Color scheme": "Farbschema",
+        "Danger": "Gefahr",
+        "Success": "Erfolg",
+        "Warning": "Warnung",
+        "Info": "Info",
+        "Enable banner": "Banner aktivieren",
+        "Show dismiss icon (users can hide the banner)": "Schließen-Symbol anzeigen (Nutzende können das Banner ausblenden)",
+        "Banner disabled": "Banner deaktiviert",
+        "Live preview": "Live-Vorschau",
+        "Read more label": "Weiterlesen-Beschriftung",
+        "Optional link label, e.g. “Read more”": "Optionale Link-Beschriftung, z. B. „Weiterlesen“",
+        "Read more link": "Weiterlesen-Link",
+        "Add a link for more details": "Link für weitere Details hinzufügen",
+        "Save banner": "Banner speichern",
+        "Banner settings saved": "Bannereinstellungen gespeichert",
+        "Unable to save banner settings": "Bannereinstellungen konnten nicht gespeichert werden",
+        "Dismiss banner": "Banner schließen"
+    },
+    "pluralForm": "nplurals=2; plural=(n != 1);"
+}

@@ -1,0 +1,17 @@
+# Ignore Composer dependencies
+/vendor/
+
+# Ignore OS and editor files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Ignore log files
+*.log
+
+# Ignore node_modules if you ever use Node.js
+/node_modules/
+
+# Ignore VS Code settings
+/.vscode/

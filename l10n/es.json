@@ -1,0 +1,27 @@
+{
+    "translations": {
+        "Announcement banner": "Banner de anuncio",
+        "The Announcement Banner app displays a customizable notification bar on every Nextcloud page, with your own message, a visual theme to highlight the type of announcement, and an optional link for more details. It offers a real-time preview of the banner, and your changes are shown to all users once they are saved.": "La aplicación Announcement Banner muestra en cada página de Nextcloud una barra de notificación personalizable con un mensaje propio, un tema visual para destacar el tipo de anuncio y un enlace opcional para más detalles. Ofrece una vista previa en tiempo real del banner y, una vez guardados, los cambios se muestran a todos los usuarios.",
+        "Show an announcement banner at the top of every page": "Muestra una pancarta de anuncio en la parte superior de cada página",
+        "Banner message": "Mensaje del banner",
+        "What do you need everyone to know?": "¿Qué necesitan saber todos?",
+        "Color scheme": "Esquema de colores",
+        "Danger": "Peligro",
+        "Success": "Éxito",
+        "Warning": "Advertencia",
+        "Info": "Información",
+        "Enable banner": "Activar banner",
+        "Show dismiss icon (users can hide the banner)": "Mostrar icono para cerrar (los usuarios pueden ocultar el banner)",
+        "Banner disabled": "Banner desactivado",
+        "Live preview": "Vista previa en vivo",
+        "Read more label": "Etiqueta de leer más",
+        "Optional link label, e.g. “Read more”": "Etiqueta de enlace opcional, p. ej., \"Leer más\"",
+        "Read more link": "Enlace de leer más",
+        "Add a link for more details": "Añade un enlace para más detalles",
+        "Save banner": "Guardar banner",
+        "Banner settings saved": "Configuración del banner guardada",
+        "Unable to save banner settings": "No se pudo guardar la configuración del banner",
+        "Dismiss banner": "Cerrar banner"
+    },
+    "pluralForm": "nplurals=2; plural=(n != 1);"
+}

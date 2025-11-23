@@ -1,0 +1,27 @@
+OC.L10N.register(
+    "announcementbanner",
+    {
+    "Announcement banner" : "Announcement banner",
+    "The Announcement Banner app displays a customizable notification bar on every Nextcloud page, with your own message, a visual theme to highlight the type of announcement, and an optional link for more details. It offers a real-time preview of the banner, and your changes are shown to all users once they are saved." : "The Announcement Banner app displays a customizable notification bar on every Nextcloud page, with your own message, a visual theme to highlight the type of announcement, and an optional link for more details. It offers a real-time preview of the banner, and your changes are shown to all users once they are saved.",
+    "Show an announcement banner at the top of every page" : "Show an announcement banner at the top of every page",
+    "Banner message" : "Banner message",
+    "What do you need everyone to know?" : "What do you need everyone to know?",
+    "Color scheme" : "Color scheme",
+    "Danger" : "Danger",
+    "Success" : "Success",
+    "Warning" : "Warning",
+    "Info" : "Info",
+    "Enable banner" : "Enable banner",
+    "Show dismiss icon (users can hide the banner)" : "Show dismiss icon (users can hide the banner)",
+    "Banner disabled" : "Banner disabled",
+    "Live preview" : "Live preview",
+    "Read more label" : "Read more label",
+    "Optional link label, e.g. “Read more”" : "Optional link label, e.g. “Read more”",
+    "Read more link" : "Read more link",
+    "Add a link for more details" : "Add a link for more details",
+    "Save banner" : "Save banner",
+    "Banner settings saved" : "Banner settings saved",
+    "Unable to save banner settings" : "Unable to save banner settings",
+    "Dismiss banner" : "Dismiss banner"
+},
+"nplurals=2; plural=(n != 1);");

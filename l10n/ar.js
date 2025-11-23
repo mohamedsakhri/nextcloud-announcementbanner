@@ -1,0 +1,27 @@
+OC.L10N.register(
+    "announcementbanner",
+    {
+    "Announcement banner" : "لافتة إعلان",
+    "The Announcement Banner app displays a customizable notification bar on every Nextcloud page, with your own message, a visual theme to highlight the type of announcement, and an optional link for more details. It offers a real-time preview of the banner, and your changes are shown to all users once they are saved." : "يقدّم تطبيق لافتة الإعلانات شريط إشعارات قابلًا للتخصيص في كل صفحة من صفحات Nextcloud، مع رسالة مخصصة، ونمط بصري يبرز نوع الإعلان، ورابط اختياري لمزيد من التفاصيل. يوفّر معاينة فورية للافتة، وتظهر التغييرات للجميع بعد حفظها.",
+    "Show an announcement banner at the top of every page" : "اعرض لافتة إعلان في أعلى كل صفحة",
+    "Banner message" : "رسالة اللافتة",
+    "What do you need everyone to know?" : "ما الذي تحتاج أن يعرفه الجميع؟",
+    "Color scheme" : "مخطط الألوان",
+    "Danger" : "خطر",
+    "Success" : "نجاح",
+    "Warning" : "تحذير",
+    "Info" : "معلومة",
+    "Enable banner" : "تفعيل اللافتة",
+    "Show dismiss icon (users can hide the banner)" : "إظهار أيقونة الإخفاء (يمكن للمستخدمين إخفاء اللافتة)",
+    "Banner disabled" : "اللافتة معطلة",
+    "Live preview" : "معاينة مباشرة",
+    "Read more label" : "تسمية قراءة المزيد",
+    "Optional link label, e.g. “Read more”" : "تسمية رابط اختيارية، مثل \"اقرأ المزيد\"",
+    "Read more link" : "رابط قراءة المزيد",
+    "Add a link for more details" : "أضف رابطًا لمزيد من التفاصيل",
+    "Save banner" : "حفظ اللافتة",
+    "Banner settings saved" : "تم حفظ إعدادات اللافتة",
+    "Unable to save banner settings" : "تعذّر حفظ إعدادات اللافتة",
+    "Dismiss banner" : "إخفاء اللافتة"
+},
+"nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5;");
