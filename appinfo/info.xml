@@ -6,17 +6,24 @@
     <summary>Display a customizable notification bar on every Nextcloud page.</summary>
     <description><![CDATA[The Announcement Banner app displays a customizable notification bar on every Nextcloud page, with your own message, a visual theme to highlight the type of announcement, and an optional link for more details. It offers a real-time preview of the banner, and your changes are shown to all users once they are saved.]]></description>
     <version>1.0.0</version>
-    <licence>gplv3</licence>
+    <licence>gpl3</licence>
     <author>Mohamed Sakhri</author>
     <namespace>AnnouncementBanner</namespace>
+    <repository>https://github.com/mohamedsakhri/nextcloud-announcementbanner</repository>
+    <screenshot>https://raw.githubusercontent.com/mohamedsakhri/nextcloud-announcementbanner/main/screenshots/banner-files.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/mohamedsakhri/nextcloud-announcementbanner/main/screenshots/banner-dashboard.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/mohamedsakhri/nextcloud-announcementbanner/main/screenshots/banner-warning.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/mohamedsakhri/nextcloud-announcementbanner/main/screenshots/banner-success.png</screenshot>
+    <website>https://github.com/mohamedsakhri/nextcloud-announcementbanner</website>
+    <discussion>https://github.com/mohamedsakhri/nextcloud-announcementbanner/discussions</discussion>
+    <bugs>https://github.com/mohamedsakhri/nextcloud-announcementbanner/issues</bugs>
     <category>integration</category>
     <category>customization</category>
     <category>tools</category>
-    <category>organisation</category>
-    <icon>img/announcementbanner-dark.svg</icon>
+    <category>organization</category>
     <dependencies>
-        <php min-version="8.1" max-version="8.4" />
-        <nextcloud min-version="30" max-version="32" />
+      <php min-version="8.1" max-version="8.4" />
+      <nextcloud min-version="30" max-version="32" />
     </dependencies>
     <settings>
         <admin>OCA\AnnouncementBanner\Settings\Admin</admin>
