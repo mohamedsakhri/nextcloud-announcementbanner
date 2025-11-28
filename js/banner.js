@@ -2,6 +2,30 @@
 	const APP_ID = 'announcementbanner';
 	const DISMISS_PREFIX = APP_ID + ':dismissed:';
 
+	function isAuthScreen() {
+		const body = document.body;
+		const path = (window.location && window.location.pathname) ? window.location.pathname : '';
+		const href = (window.location && window.location.href) ? window.location.href : '';
+
+		if (body && (body.id === 'body-login' || body.classList.contains('body-login'))) {
+			return true;
+		}
+
+		if (/\/login(\/|$)/.test(path) || path.includes('/login/v2') || path.includes('/login/flow')) {
+			return true;
+		}
+
+		if (href.includes('/apps/oauth2') || href.includes('/oauth2') || href.includes('/login/v2')) {
+			return true;
+		}
+
+		if (href.includes('client=') && href.includes('login')) {
+			return true;
+		}
+
+		return false;
+	}
+
 	function escapeHtml(input) {
 		const div = document.createElement('div');
 		div.appendChild(document.createTextNode(input));
@@ -97,6 +121,11 @@
 	}
 
 	async function loadBanner() {
+		// Do not show the banner on login/authorization flows (incl. desktop client OAuth)
+		if (isAuthScreen()) {
+			return;
+		}
+
 		if (!window.OC || !OC.generateUrl) {
 			return;
 		}
