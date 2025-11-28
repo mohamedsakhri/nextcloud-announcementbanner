@@ -79,28 +79,29 @@
 	opacity: 1;
 }
 
+
 .announcementbanner--danger {
-	color: var(--color-text-inverted, #fff);
-	background: var(--color-error, #8b1e2d);
-	border-color: var(--color-error-hover, #9f3040);
+  color: #fff;
+  background: #c0392b;
+  border-color: #a93226;
 }
 
 .announcementbanner--success {
-	color: var(--color-text-inverted, #fff);
-	background: var(--color-success, #1f6b43);
-	border-color: var(--color-success-hover, #2b8452);
+  color: #fff;
+  background: #27ae60;
+  border-color: #229954;
 }
 
 .announcementbanner--warning {
-	color: var(--color-text-inverted, #fff);
-	background: var(--color-warning, #b65c1a);
-	border-color: var(--color-warning-hover, #cc6f25);
+  color: #fff;
+  background: #f39c12;
+  border-color: #e67e22;
 }
 
 .announcementbanner--info {
-	color: var(--color-text-inverted, #fff);
-	background: var(--color-primary-element, #1f5d94);
-	border-color: var(--color-primary-element-hover, #2f74b2);
+  color: #fff;
+  background: #2980b9;
+  border-color: #2471a3;
 }
 
 .announcementbanner__readmore {
