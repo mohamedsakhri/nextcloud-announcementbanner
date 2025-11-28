@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+
+## 1.0.2
+
+- Fix colors for NC 32
+- Fix icon for NC 32
+
 ## 1.0.1
 
 - Make banner/admin preview icons use the bundled app SVG for consistency.
