@@ -1,11 +1,11 @@
 {
     "translations": {
         "Announcement banner": "Bannière d'annonce",
-        "The Announcement Banner app displays a customizable notification bar on every Nextcloud page, with your own message, a visual theme to highlight the type of announcement, and an optional link for more details. It offers a real-time preview of the banner, and your changes are shown to all users once they are saved.": "L’application Announcement Banner affiche sur chaque page Nextcloud une barre de notification personnalisable avec votre message, un thème visuel pour mettre en valeur le type d’annonce et un lien facultatif pour plus de détails. Elle offre une prévisualisation en temps réel, et vos modifications sont visibles par tous les utilisateurs une fois enregistrées.",
+        "The Announcement Banner app displays a customizable notification bar on every Nextcloud page, with your own message, a visual theme to highlight the type of announcement, and an optional link for more details. It offers a real-time preview of the banner, and your changes are shown to all users once they are saved.": "L'application Announcement Banner affiche une barre de notification personnalisable sur chaque page Nextcloud, avec votre propre message, un thème visuel pour mettre en évidence le type d'annonce et un lien facultatif pour plus de détails. Elle offre un aperçu en temps réel de la bannière, et vos modifications sont visibles par tous les utilisateurs dès qu'elles sont enregistrées.",
         "Show an announcement banner at the top of every page": "Afficher une bannière d'annonce en haut de chaque page",
         "Banner message": "Message de la bannière",
-        "What do you need everyone to know?": "Que doit savoir tout le monde ?",
-        "Color scheme": "Schéma de couleurs",
+        "What do you need everyone to know?": "Que souhaitez-vous que tout le monde sache ?",
+        "Color scheme": "Palette de couleurs",
         "Danger": "Danger",
         "Success": "Succès",
         "Warning": "Avertissement",
