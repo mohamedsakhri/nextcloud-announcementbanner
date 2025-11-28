@@ -17,24 +17,15 @@
 		const icon = document.createElement('span');
 		icon.className = 'announcementbanner__icon';
 		icon.setAttribute('aria-hidden', 'true');
-		const svgNS = 'http://www.w3.org/2000/svg';
-		const svg = document.createElementNS(svgNS, 'svg');
-		svg.setAttribute('viewBox', '0 0 24 24');
-		svg.setAttribute('fill', 'none');
-		svg.setAttribute('stroke', 'currentColor');
-		svg.setAttribute('stroke-width', '2');
-		svg.setAttribute('stroke-linecap', 'round');
-		svg.setAttribute('stroke-linejoin', 'round');
-		const body = document.createElementNS(svgNS, 'path');
-		body.setAttribute('d', 'M3 14a2 2 0 0 0 2 2h2l9 5V3l-9 5H5a2 2 0 0 0-2 2z');
-		const sound1 = document.createElementNS(svgNS, 'path');
-		sound1.setAttribute('d', 'M18 8a4 4 0 0 1 0 8');
-		const sound2 = document.createElementNS(svgNS, 'path');
-		sound2.setAttribute('d', 'M20.5 6.5a7 7 0 0 1 0 11');
-		svg.appendChild(body);
-		svg.appendChild(sound1);
-		svg.appendChild(sound2);
-		icon.appendChild(svg);
+		const iconUrl = (window.OC && OC.generateUrl)
+			? OC.generateUrl(`/apps/${APP_ID}/img/app.svg`)
+			: `/apps/${APP_ID}/img/app.svg`;
+		const img = document.createElement('img');
+		img.setAttribute('src', iconUrl);
+		img.setAttribute('alt', '');
+		img.setAttribute('width', '20');
+		img.setAttribute('height', '20');
+		icon.appendChild(img);
 		banner.appendChild(icon);
 
 		const message = document.createElement('div');

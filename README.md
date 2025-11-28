@@ -4,13 +4,25 @@ The Announcement Banner App adds a customizable notification bar at the top of e
 
 ## Screenshots
 
-**Success Banner Example**
+**Admin Preview**
+
+![Admin Preview](screenshots/banner-admin-preview.png)
+
+**Success (Light)**
 
 ![Success Banner](screenshots/banner-success.png)
 
-**Warning Banner Example**
+**Success (Dark)**
 
-![Maintenance Banner](screenshots/banner-warning.png)
+![Success Banner Dark](screenshots/banner-success-dark.png)
+
+**Warning**
+
+![Warning Banner](screenshots/banner-warning.png)
+
+**Danger**
+
+![Danger Banner](screenshots/banner-danger.png)
 
 ## Features
 

@@ -13,6 +13,7 @@
 	border: 1px solid transparent;
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 	margin-bottom: 1rem;
+	color: var(--color-text, #fff);
 }
 
 .announcementbanner__icon {
@@ -27,6 +28,11 @@
 .announcementbanner__icon svg {
 	width: 20px;
 	height: 20px;
+}
+.announcementbanner__icon img {
+	width: 20px;
+	height: 20px;
+	display: block;
 }
 
 .announcementbanner__message {
@@ -47,7 +53,7 @@
 	appearance: none;
 	-webkit-appearance: none;
 	-moz-appearance: none;
-	color: #e9f7ef;
+	color: inherit;
 	font-size: 22px;
 	font-weight: 700;
 	text-transform: uppercase;
@@ -58,13 +64,14 @@
 	vertical-align: middle;
 	cursor: pointer;
 	opacity: 1;
+	color: var(--color-text, #fff);
 }
 
 .announcementbanner__close svg {
 	width: 16px;
 	height: 16px;
-	color: #e9f7ef;
-	stroke: #e9f7ef;
+	color: var(--color-text, #fff);
+	stroke: currentColor;
 }
 
 .announcementbanner__close:hover,
@@ -73,27 +80,27 @@
 }
 
 .announcementbanner--danger {
-	color: #fde7e7;
-	background: #8b1e2d;
-	border-color: #9f3040;
+	color: var(--color-text-inverted, #fff);
+	background: var(--color-error, #8b1e2d);
+	border-color: var(--color-error-hover, #9f3040);
 }
 
 .announcementbanner--success {
-	color: #e9f7ef;
-	background: #1f6b43;
-	border-color: #2b8452;
+	color: var(--color-text-inverted, #fff);
+	background: var(--color-success, #1f6b43);
+	border-color: var(--color-success-hover, #2b8452);
 }
 
 .announcementbanner--warning {
-	color: #fff3e0;
-	background: #b65c1a;
-	border-color: #cc6f25;
+	color: var(--color-text-inverted, #fff);
+	background: var(--color-warning, #b65c1a);
+	border-color: var(--color-warning-hover, #cc6f25);
 }
 
 .announcementbanner--info {
-	color: #e5f0ff;
-	background: #1f5d94;
-	border-color: #2f74b2;
+	color: var(--color-text-inverted, #fff);
+	background: var(--color-primary-element, #1f5d94);
+	border-color: var(--color-primary-element-hover, #2f74b2);
 }
 
 .announcementbanner__readmore {

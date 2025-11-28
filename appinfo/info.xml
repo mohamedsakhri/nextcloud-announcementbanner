@@ -4,16 +4,25 @@
     <id>announcementbanner</id>
     <name>Announcement Banner</name>
     <summary>Display a customizable notification bar on every Nextcloud page.</summary>
-    <description><![CDATA[The Announcement Banner app displays a customizable notification bar on every Nextcloud page, with your own message, a visual theme to highlight the type of announcement, and an optional link for more details. It offers a real-time preview of the banner, and your changes are shown to all users once they are saved.]]></description>
-    <version>1.0.0</version>
+    <description><![CDATA[Post an announcement banner across every Nextcloud page to keep everyone informed.
+
+
+**Features**
+ * Global banner visible on all pages with themed variants (info, success, warning, danger).
+ * Optional dismiss button so users can hide the banner when allowed.
+ * Optional "read more" link with custom label and URL.
+ * Live preview in admin settings before publishing to everyone.
+ * Changes take effect immediately after saving.]]></description>
+    <version>1.0.1</version>
     <licence>gpl3</licence>
     <author>Mohamed Sakhri</author>
     <namespace>AnnouncementBanner</namespace>
     <repository>https://github.com/mohamedsakhri/nextcloud-announcementbanner</repository>
-    <screenshot>https://raw.githubusercontent.com/mohamedsakhri/nextcloud-announcementbanner/main/screenshots/banner-files.png</screenshot>
-    <screenshot>https://raw.githubusercontent.com/mohamedsakhri/nextcloud-announcementbanner/main/screenshots/banner-dashboard.png</screenshot>
-    <screenshot>https://raw.githubusercontent.com/mohamedsakhri/nextcloud-announcementbanner/main/screenshots/banner-warning.png</screenshot>
+    <screenshot small-thumbnail="https://raw.githubusercontent.com/mohamedsakhri/nextcloud-announcementbanner/main/screenshots/banner-warning.png">https://raw.githubusercontent.com/mohamedsakhri/nextcloud-announcementbanner/main/screenshots/banner-warning.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/mohamedsakhri/nextcloud-announcementbanner/main/screenshots/banner-admin-preview.png</screenshot>
     <screenshot>https://raw.githubusercontent.com/mohamedsakhri/nextcloud-announcementbanner/main/screenshots/banner-success.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/mohamedsakhri/nextcloud-announcementbanner/main/screenshots/banner-success-dark.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/mohamedsakhri/nextcloud-announcementbanner/main/screenshots/banner-danger.png</screenshot>
     <website>https://github.com/mohamedsakhri/nextcloud-announcementbanner</website>
     <discussion>https://github.com/mohamedsakhri/nextcloud-announcementbanner/discussions</discussion>
     <bugs>https://github.com/mohamedsakhri/nextcloud-announcementbanner/issues</bugs>

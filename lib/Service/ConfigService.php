@@ -84,8 +84,19 @@ class ConfigService {
 
         $message = $settings['message'] ?? '';
         $variant = $settings['variant'] ?? 'info';
+        $readMoreText = $settings['readMoreText'] ?? '';
+        $readMoreUrl = $settings['readMoreUrl'] ?? '';
+        $enabled = $settings['enabled'] ?? false;
+        $dismissible = $settings['dismissible'] ?? false;
 
-        return md5($message . '|' . $variant);
+        return md5(implode('|', [
+            $message,
+            $variant,
+            $readMoreText,
+            $readMoreUrl,
+            $enabled ? '1' : '0',
+            $dismissible ? '1' : '0',
+        ]));
     }
 
     private function normalizeVariant(string $variant): string {

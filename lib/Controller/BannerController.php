@@ -36,12 +36,14 @@ class BannerController extends Controller {
     #[AdminRequired]
     #[CSRFRequired]
     public function saveBanner(): DataResponse {
-        $enabled = filter_var($this->request->getParam('enabled', false), FILTER_VALIDATE_BOOLEAN);
-        $dismissible = filter_var($this->request->getParam('dismissible', false), FILTER_VALIDATE_BOOLEAN);
-        $message = (string)$this->request->getParam('message', '');
-        $variant = (string)$this->request->getParam('variant', 'blue');
-        $readMoreText = (string)$this->request->getParam('readMoreText', '');
-        $readMoreUrl = (string)$this->request->getParam('readMoreUrl', '');
+        $payload = $this->readInput();
+
+        $enabled = filter_var($payload['enabled'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        $dismissible = filter_var($payload['dismissible'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        $message = (string)($payload['message'] ?? '');
+        $variant = (string)($payload['variant'] ?? 'info');
+        $readMoreText = (string)($payload['readMoreText'] ?? '');
+        $readMoreUrl = (string)($payload['readMoreUrl'] ?? '');
 
         try {
             $payload = $this->configService->saveBannerSettings(
@@ -60,5 +62,25 @@ class BannerController extends Controller {
         }
 
         return new DataResponse($payload);
+    }
+
+    /**
+     * Merge form params with JSON body to support both content types.
+     */
+    private function readInput(): array {
+        $params = $this->request->getParams();
+
+        $contentType = $this->request->getHeader('Content-Type') ?? '';
+        if (stripos($contentType, 'application/json') !== false) {
+            $raw = @file_get_contents('php://input');
+            if (is_string($raw) && $raw !== '') {
+                $decoded = json_decode($raw, true);
+                if (is_array($decoded)) {
+                    $params = array_merge($params, $decoded);
+                }
+            }
+        }
+
+        return $params;
     }
 }
