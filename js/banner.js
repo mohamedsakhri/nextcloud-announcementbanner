@@ -85,6 +85,8 @@
 			closeButton.appendChild(svg);
 			closeButton.addEventListener('click', () => {
 				banner.remove();
+				// Reset body height when banner is dismissed
+				adjustBodyHeight(0);
 				if (data.dismissKey) {
 					try {
 						window.localStorage.setItem(DISMISS_PREFIX + data.dismissKey, '1');
@@ -97,6 +99,26 @@
 		}
 
 		return banner;
+	}
+
+	let originalBodyHeight = null;
+
+	function adjustBodyHeight(bannerHeight) {
+		const root = document.documentElement;
+		const currentHeight = getComputedStyle(root).getPropertyValue('--body-height').trim();
+		
+		if (bannerHeight > 0 && currentHeight) {
+			// Store original height if not already stored
+			if (originalBodyHeight === null) {
+				originalBodyHeight = currentHeight;
+			}
+			// Adjust --body-height globally to compensate for banner
+			root.style.setProperty('--body-height', `calc(${originalBodyHeight} - ${bannerHeight}px)`);
+		} else if (bannerHeight === 0 && originalBodyHeight !== null) {
+			// Reset to original height when banner is removed
+			root.style.setProperty('--body-height', originalBodyHeight);
+			originalBodyHeight = null;
+		}
 	}
 
 	function insertBanner(banner) {
@@ -119,6 +141,14 @@
 		} else {
 			body.appendChild(banner);
 		}
+
+		// Adjust body height after banner is inserted and rendered
+		setTimeout(() => {
+			const bannerHeight = banner.getBoundingClientRect().height;
+			if (bannerHeight > 0) {
+				adjustBodyHeight(Math.ceil(bannerHeight));
+			}
+		}, 0);
 	}
 
 	async function loadBanner() {
