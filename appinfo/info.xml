@@ -13,7 +13,7 @@
  * Optional "read more" link with custom label and URL.
  * Live preview in admin settings before publishing to everyone.
  * Changes take effect immediately after saving.]]></description>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
     <licence>gpl3</licence>
     <author>Mohamed Sakhri</author>
     <namespace>AnnouncementBanner</namespace>
