@@ -10,7 +10,141 @@
 			variant: formData.get('variant') ?? 'info',
 			enabled: formData.get('enabled') !== null,
 			dismissible: formData.get('dismissible') !== null,
+			messageTranslations: collectTranslations('message'),
+			readMoreTextTranslations: collectTranslations('readMoreText'),
 		};
+	}
+
+	function collectTranslations(fieldName) {
+		const rows = document.querySelectorAll(`.announcementbanner-translation-row[data-field="${fieldName}"]`);
+		const translations = {};
+
+		rows.forEach((row) => {
+			const lang = row.querySelector('.announcementbanner-translation-lang')?.value?.trim() ?? '';
+			const value = row.querySelector('.announcementbanner-translation-value')?.value?.trim() ?? '';
+			if (lang !== '' && value !== '') {
+				translations[lang] = value;
+			}
+		});
+
+		return translations;
+	}
+
+	function getUsedLanguages(fieldName) {
+		const rows = document.querySelectorAll(`.announcementbanner-translation-row[data-field="${fieldName}"] .announcementbanner-translation-lang`);
+		const used = new Set();
+		rows.forEach((el) => {
+			const val = el.value?.trim();
+			if (val) {
+				used.add(val);
+			}
+		});
+		return used;
+	}
+
+	function addTranslationRow(fieldName, lang = '', value = '') {
+		const list = document.querySelector(`.announcementbanner-translations__list[data-field="${fieldName}"]`);
+		if (!list) {
+			return;
+		}
+
+		let options = {};
+		try {
+			options = JSON.parse(list.dataset.langOptions || '{}');
+		} catch {
+			options = {};
+		}
+
+		if (Object.keys(options).length === 0) {
+			options = { en: 'English', es: 'Español' };
+		}
+
+		const used = getUsedLanguages(fieldName);
+		if (!lang) {
+			const firstAvailable = Object.keys(options).find((code) => !used.has(code));
+			if (firstAvailable) {
+				lang = firstAvailable;
+			} else {
+				return;
+			}
+		}
+
+		if (used.has(lang)) {
+			return Array.from(document.querySelectorAll(`.announcementbanner-translation-row[data-field="${fieldName}"]`)).find((row) => row.querySelector('.announcementbanner-translation-lang')?.value === lang) || null;
+		}
+
+		const row = document.createElement('div');
+		row.className = 'announcementbanner-translation-row';
+		row.dataset.field = fieldName;
+
+		const langSelect = document.createElement('select');
+		langSelect.className = 'announcementbanner-translation-lang';
+
+		const hasLangOption = lang && Object.prototype.hasOwnProperty.call(options, lang);
+		Object.entries(options).forEach(([code, label]) => {
+			const opt = document.createElement('option');
+			opt.value = code;
+			opt.textContent = label;
+			if (lang === code) {
+				opt.selected = true;
+			}
+			langSelect.appendChild(opt);
+		});
+
+		if (lang && !hasLangOption) {
+			const opt = document.createElement('option');
+			opt.value = lang;
+			opt.textContent = lang;
+			opt.selected = true;
+			langSelect.appendChild(opt);
+		}
+
+		const valueArea = document.createElement('textarea');
+		valueArea.className = 'announcementbanner-translation-value';
+		valueArea.rows = 2;
+		valueArea.placeholder = list.dataset.valuePlaceholder || '';
+		valueArea.value = value;
+
+		const removeBtn = document.createElement('button');
+		removeBtn.type = 'button';
+		removeBtn.className = 'btn btn-link btn-sm announcementbanner-remove-translation';
+		removeBtn.classList.add('announcementbanner-icon-button');
+		const removeIcon = list.dataset.removeIcon;
+		if (removeIcon) {
+			removeBtn.innerHTML = `<img src="${removeIcon}" alt="">`;
+		} else {
+			removeBtn.textContent = list.dataset.removeLabel || 'Remove';
+		}
+		removeBtn.addEventListener('click', () => row.remove());
+
+		row.appendChild(langSelect);
+		row.appendChild(valueArea);
+		row.appendChild(removeBtn);
+
+		list.appendChild(row);
+		return row;
+	}
+
+	function renderTranslations(fieldName, translations) {
+		const list = document.querySelector(`.announcementbanner-translations__list[data-field="${fieldName}"]`);
+		if (!list) {
+			return;
+		}
+
+		list.innerHTML = '';
+		Object.entries(translations || {}).forEach(([lang, value]) => {
+			addTranslationRow(fieldName, lang, value);
+		});
+	}
+
+	function initTranslationControls() {
+		document.querySelectorAll('.announcementbanner-translations__list').forEach((list) => {
+			const field = list.dataset.field;
+			const addBtn = document.querySelector(`.announcementbanner-add-translation[data-field="${field}"]`);
+			if (addBtn) {
+				addBtn.addEventListener('click', () => addTranslationRow(field));
+			}
+		});
 	}
 
 	function initFormHandler() {
@@ -33,6 +167,16 @@
 		let lastSavedVariant = variantSelect ? variantSelect.value : 'info';
 		let lastSavedEnabled = enabledInput ? enabledInput.checked : false;
 		let lastSavedDismissible = dismissibleInput ? dismissibleInput.checked : true;
+		let lastSavedMessageTranslations = {};
+		let lastSavedReadMoreTextTranslations = {};
+
+		initTranslationControls();
+
+		form.querySelectorAll('.announcementbanner-translation-row .announcementbanner-remove-translation').forEach((btn) => {
+			btn.addEventListener('click', (event) => {
+				event.currentTarget.closest('.announcementbanner-translation-row')?.remove();
+			});
+		});
 
 		function escapeHtml(input) {
 			const div = document.createElement('div');
@@ -194,6 +338,12 @@
 						readMoreUrlInput.value = data.readMoreUrl;
 					}
 				}
+				if (data.messageTranslations && typeof data.messageTranslations === 'object') {
+					lastSavedMessageTranslations = data.messageTranslations;
+				}
+				if (data.readMoreTextTranslations && typeof data.readMoreTextTranslations === 'object') {
+					lastSavedReadMoreTextTranslations = data.readMoreTextTranslations;
+				}
 				if (typeof data.variant === 'string') {
 					lastSavedVariant = data.variant;
 					if (variantSelect) {
@@ -213,6 +363,8 @@
 					}
 				}
 
+				renderTranslations('message', lastSavedMessageTranslations);
+				renderTranslations('readMoreText', lastSavedReadMoreTextTranslations);
 				updatePageBanner({
 					enabled: lastSavedEnabled,
 					message: lastSavedMessage,
@@ -288,6 +440,12 @@
 							readMoreUrlInput.value = data.readMoreUrl;
 						}
 					}
+					if (data.messageTranslations && typeof data.messageTranslations === 'object') {
+						lastSavedMessageTranslations = data.messageTranslations;
+					}
+					if (data.readMoreTextTranslations && typeof data.readMoreTextTranslations === 'object') {
+						lastSavedReadMoreTextTranslations = data.readMoreTextTranslations;
+					}
 					if (typeof data.variant === 'string') {
 						lastSavedVariant = data.variant;
 						if (variantSelect) {
@@ -306,6 +464,8 @@
 							dismissibleInput.checked = data.dismissible;
 						}
 					}
+					renderTranslations('message', lastSavedMessageTranslations);
+					renderTranslations('readMoreText', lastSavedReadMoreTextTranslations);
 					updatePageBanner({
 						enabled: lastSavedEnabled,
 						message: lastSavedMessage,

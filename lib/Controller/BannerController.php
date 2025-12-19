@@ -41,17 +41,21 @@ class BannerController extends Controller {
         $enabled = filter_var($payload['enabled'] ?? false, FILTER_VALIDATE_BOOLEAN);
         $dismissible = filter_var($payload['dismissible'] ?? false, FILTER_VALIDATE_BOOLEAN);
         $message = (string)($payload['message'] ?? '');
+        $messageTranslations = $this->normalizeTranslations($payload['messageTranslations'] ?? []);
         $variant = (string)($payload['variant'] ?? 'info');
         $readMoreText = (string)($payload['readMoreText'] ?? '');
+        $readMoreTextTranslations = $this->normalizeTranslations($payload['readMoreTextTranslations'] ?? []);
         $readMoreUrl = (string)($payload['readMoreUrl'] ?? '');
 
         try {
             $payload = $this->configService->saveBannerSettings(
                 $enabled,
                 $message,
+                $messageTranslations,
                 $variant,
                 $dismissible,
                 $readMoreText,
+                $readMoreTextTranslations,
                 $readMoreUrl,
             );
         } catch (InvalidArgumentException $e) {
@@ -82,5 +86,26 @@ class BannerController extends Controller {
         }
 
         return $params;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function normalizeTranslations(mixed $value): array {
+        if (is_string($value)) {
+            $decoded = json_decode($value, true);
+            $value = is_array($decoded) ? $decoded : [];
+        }
+
+        if (!is_array($value)) {
+            return [];
+        }
+
+        $translations = [];
+        foreach ($value as $locale => $message) {
+            $translations[(string)$locale] = (string)$message;
+        }
+
+        return $translations;
     }
 }

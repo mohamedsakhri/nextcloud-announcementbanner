@@ -1,7 +1,7 @@
 {
     "translations": {
         "Announcement banner": "لافتة إعلان",
-        "The Announcement Banner app displays a customizable notification bar on every Nextcloud page, with your own message, a visual theme to highlight the type of announcement, and an optional link for more details. It offers a real-time preview of the banner, and your changes are shown to all users once they are saved.": "يقدّم تطبيق لافتة الإعلانات شريط إشعارات قابلًا للتخصيص في كل صفحة من صفحات Nextcloud، مع رسالة مخصصة، ونمط بصري يبرز نوع الإعلان، ورابط اختياري لمزيد من التفاصيل. يوفّر معاينة فورية للافتة، وتظهر التغييرات للجميع بعد حفظها.",
+        "The Announcement Banner app displays a customizable notification bar on every Nextcloud page, with your own message, a visual theme to highlight the type of announcement, and an optional link for more details. You can add translations so users see the banner in their language; otherwise the default message is shown. It offers a real-time preview of the banner, and your changes are shown to all users once they are saved.": "يقدّم تطبيق لافتة الإعلانات شريط إشعارات قابلًا للتخصيص في كل صفحة من صفحات Nextcloud، مع رسالة مخصصة، ونمط بصري يبرز نوع الإعلان، ورابط اختياري لمزيد من التفاصيل. يمكنك إضافة ترجمات حتى يرى المستخدمون اللافتة بلغتهم؛ وإلا فستظهر الرسالة الافتراضية. يوفّر معاينة فورية للافتة، وتظهر التغييرات للجميع بعد حفظها.",
         "Show an announcement banner at the top of every page": "اعرض لافتة إعلان في أعلى كل صفحة",
         "Banner message": "رسالة اللافتة",
         "What do you need everyone to know?": "ما الذي تحتاج أن يعرفه الجميع؟",
@@ -18,6 +18,11 @@
         "Optional link label, e.g. “Read more”": "تسمية رابط اختيارية، مثل \"اقرأ المزيد\"",
         "Read more link": "رابط قراءة المزيد",
         "Add a link for more details": "أضف رابطًا لمزيد من التفاصيل",
+        "Translations": "الترجمات",
+        "Add translation": "إضافة ترجمة",
+        "Language code (e.g. en, de, fr)": "رمز اللغة (مثل en و de و fr)",
+        "Translation text": "نص الترجمة",
+        "Remove": "إزالة",
         "Save banner": "حفظ اللافتة",
         "Banner settings saved": "تم حفظ إعدادات اللافتة",
         "Unable to save banner settings": "تعذّر حفظ إعدادات اللافتة",

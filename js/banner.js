@@ -32,6 +32,62 @@
 		return div.innerHTML;
 	}
 
+	function normalizeLocale(value) {
+		if (!value) {
+			return '';
+		}
+		return String(value).trim().toLowerCase().replace('_', '-');
+	}
+
+	function getLocaleCandidates() {
+		const candidates = [];
+		const ocLanguage = (window.OC && typeof OC.getLanguage === 'function') ? OC.getLanguage() : '';
+		const htmlLanguage = document.documentElement ? document.documentElement.lang : '';
+		const browserLanguage = (navigator && navigator.language) ? navigator.language : '';
+
+		[ocLanguage, htmlLanguage, browserLanguage].forEach((value) => {
+			const normalized = normalizeLocale(value);
+			if (!normalized) {
+				return;
+			}
+			candidates.push(normalized);
+			const base = normalized.split('-')[0];
+			if (base && base !== normalized) {
+				candidates.push(base);
+			}
+		});
+
+		return Array.from(new Set(candidates));
+	}
+
+	function resolveTranslation(translations, candidates) {
+		if (!translations || typeof translations !== 'object') {
+			return '';
+		}
+		for (const locale of candidates) {
+			if (Object.prototype.hasOwnProperty.call(translations, locale)) {
+				return translations[locale];
+			}
+		}
+		return '';
+	}
+
+	function applyTranslations(payload) {
+		const candidates = getLocaleCandidates();
+		if (!payload || candidates.length === 0) {
+			return payload;
+		}
+
+		const message = resolveTranslation(payload.messageTranslations, candidates);
+		const readMoreText = resolveTranslation(payload.readMoreTextTranslations, candidates);
+
+		return {
+			...payload,
+			message: message || payload.message,
+			readMoreText: readMoreText || payload.readMoreText,
+		};
+	}
+
 	function buildBannerElement(data) {
 		const banner = document.createElement('div');
 		banner.className = 'announcementbanner announcementbanner--' + data.variant;
@@ -215,7 +271,7 @@
 			}
 		}
 
-		insertBanner(buildBannerElement(payload));
+		insertBanner(buildBannerElement(applyTranslations(payload)));
 	}
 
 	if (document.readyState === 'loading') {

@@ -30,6 +30,48 @@ $settings = $_['settings'];
 						rows="3"
 						placeholder="<?php p($_['labels']['messagePlaceholder']); ?>"
 					><?php p($settings['message']); ?></textarea>
+					<div class="announcementbanner-translations" data-field="message">
+						<div class="announcementbanner-translations__header">
+							<span class="fw-semibold"><?php p($_['labels']['translationsTitle']); ?></span>
+							<button
+								type="button"
+								class="btn btn-secondary btn-sm announcementbanner-add-translation announcementbanner-icon-button"
+								data-field="message"
+								title="<?php p($_['labels']['translationsAddLabel']); ?>"
+								aria-label="<?php p($_['labels']['translationsAddLabel']); ?>"
+							>
+								<img src="<?php print_unescaped(image_path('core', 'actions/add.svg')); ?>" alt="">
+							</button>
+						</div>
+						<div
+							class="announcementbanner-translations__list"
+							data-field="message"
+							data-lang-placeholder="<?php p($_['labels']['translationLangPlaceholder']); ?>"
+							data-value-placeholder="<?php p($_['labels']['translationValuePlaceholder']); ?>"
+							data-remove-label="<?php p($_['labels']['translationRemoveLabel']); ?>"
+							data-remove-icon="<?php print_unescaped(image_path('core', 'actions/delete.svg')); ?>"
+							data-lang-options="<?php p(json_encode($_['availableTranslationLanguages'])); ?>"
+						>
+							<?php foreach ($settings['messageTranslations'] as $lang => $text): ?>
+								<div class="announcementbanner-translation-row" data-field="message">
+									<select class="announcementbanner-translation-lang">
+										<?php foreach ($_['availableTranslationLanguages'] as $code => $label): ?>
+											<option value="<?php p($code); ?>" <?php if ($code === $lang) { print_unescaped('selected'); } ?>><?php p($label); ?></option>
+										<?php endforeach; ?>
+									</select>
+									<textarea class="announcementbanner-translation-value" rows="2" placeholder="<?php p($_['labels']['translationValuePlaceholder']); ?>"><?php p($text); ?></textarea>
+									<button
+										type="button"
+										class="btn btn-link btn-sm announcementbanner-remove-translation announcementbanner-icon-button"
+										title="<?php p($_['labels']['translationRemoveLabel']); ?>"
+										aria-label="<?php p($_['labels']['translationRemoveLabel']); ?>"
+									>
+										<img src="<?php print_unescaped(image_path('core', 'actions/delete.svg')); ?>" alt="">
+									</button>
+								</div>
+							<?php endforeach; ?>
+						</div>
+					</div>
 				</div>
 			</div>
 
@@ -46,6 +88,48 @@ $settings = $_['settings'];
 						value="<?php p($settings['readMoreText']); ?>"
 						placeholder="<?php p($_['labels']['readMoreTextPlaceholder']); ?>"
 					/>
+					<div class="announcementbanner-translations" data-field="readMoreText">
+						<div class="announcementbanner-translations__header">
+							<span class="fw-semibold"><?php p($_['labels']['translationsTitle']); ?></span>
+							<button
+								type="button"
+								class="btn btn-secondary btn-sm announcementbanner-add-translation announcementbanner-icon-button"
+								data-field="readMoreText"
+								title="<?php p($_['labels']['translationsAddLabel']); ?>"
+								aria-label="<?php p($_['labels']['translationsAddLabel']); ?>"
+							>
+								<img src="<?php print_unescaped(image_path('core', 'actions/add.svg')); ?>" alt="">
+							</button>
+						</div>
+						<div
+							class="announcementbanner-translations__list"
+							data-field="readMoreText"
+							data-lang-placeholder="<?php p($_['labels']['translationLangPlaceholder']); ?>"
+							data-value-placeholder="<?php p($_['labels']['translationValuePlaceholder']); ?>"
+							data-remove-label="<?php p($_['labels']['translationRemoveLabel']); ?>"
+							data-remove-icon="<?php print_unescaped(image_path('core', 'actions/delete.svg')); ?>"
+							data-lang-options="<?php p(json_encode($_['availableTranslationLanguages'])); ?>"
+						>
+							<?php foreach ($settings['readMoreTextTranslations'] as $lang => $text): ?>
+								<div class="announcementbanner-translation-row" data-field="readMoreText">
+									<select class="announcementbanner-translation-lang">
+										<?php foreach ($_['availableTranslationLanguages'] as $code => $label): ?>
+											<option value="<?php p($code); ?>" <?php if ($code === $lang) { print_unescaped('selected'); } ?>><?php p($label); ?></option>
+										<?php endforeach; ?>
+									</select>
+									<textarea class="announcementbanner-translation-value" rows="2" placeholder="<?php p($_['labels']['translationValuePlaceholder']); ?>"><?php p($text); ?></textarea>
+									<button
+										type="button"
+										class="btn btn-link btn-sm announcementbanner-remove-translation announcementbanner-icon-button"
+										title="<?php p($_['labels']['translationRemoveLabel']); ?>"
+										aria-label="<?php p($_['labels']['translationRemoveLabel']); ?>"
+									>
+										<img src="<?php print_unescaped(image_path('core', 'actions/delete.svg')); ?>" alt="">
+									</button>
+								</div>
+							<?php endforeach; ?>
+						</div>
+					</div>
 				</div>
 			</div>
 

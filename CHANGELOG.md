@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.1.0
+
+- Add translation overrides for banner message and read-more label (with default fallback)
+
 ## 1.0.4
 
 - Fix body height when banner is enabled in NC 32

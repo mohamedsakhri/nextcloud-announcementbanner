@@ -1,6 +1,6 @@
 # Announcement Banner App
 
-The Announcement Banner App adds a customizable notification bar at the top of every Nextcloud page. You can configure the message, color scheme, optional “read more” link, and whether users can dismiss the banner. A live preview of your banner is shown in the admin settings.
+The Announcement Banner App adds a customizable notification bar at the top of every Nextcloud page. You can configure the message, color scheme, optional “read more” link, and whether users can dismiss the banner. You can also add translations so users see the banner in their language. A live preview of your banner is shown in the admin settings.
 
 ## Screenshots
 
@@ -30,6 +30,7 @@ The Announcement Banner App adds a customizable notification bar at the top of e
 - Color schemes: info, success, warning, danger.
 - Optional dismiss button.
 - Optional “read more” link with customizable label and URL.
+- Optional translations for the banner message and read-more label (fallback to default).
 - Live preview in the admin settings; changes take effect for users after saving.
 - Multi-language support (English, German, French, Spanish, …).
 
@@ -50,4 +51,5 @@ The Announcement Banner App adds a customizable notification bar at the top of e
 - **Enable banner** toggle.
 - **Dismiss icon** toggle (allow users to hide the banner).
 - **Read more**: Optional label + URL (shown inline with an arrow icon).
+- **Translations**: Optional per-language overrides for message and read-more label; default text is the fallback.
 - Live preview updates immediately; saving publishes to all users.

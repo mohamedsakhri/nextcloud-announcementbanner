@@ -17,4 +17,5 @@ Thumbs.db
 /.vscode/
 
 # Ignore build folder
+build.sh
 /build/
