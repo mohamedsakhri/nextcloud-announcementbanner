@@ -102,22 +102,44 @@
 	}
 
 	let originalBodyHeight = null;
+	let bodyHeightElement = null;
+	let adjustedBodyHeight = null;
 
 	function adjustBodyHeight(bannerHeight) {
+		const body = document.body;
 		const root = document.documentElement;
-		const currentHeight = getComputedStyle(root).getPropertyValue('--body-height').trim();
-		
-		if (bannerHeight > 0 && currentHeight) {
-			// Store original height if not already stored
-			if (originalBodyHeight === null) {
+		const bodyHeight = body ? getComputedStyle(body).getPropertyValue('--body-height').trim() : '';
+		const rootHeight = root ? getComputedStyle(root).getPropertyValue('--body-height').trim() : '';
+		const targetElement = bodyHeight ? body : rootHeight ? root : null;
+		const currentHeight = bodyHeight || rootHeight;
+
+		if (bannerHeight > 0 && targetElement && currentHeight) {
+			if (bodyHeightElement && bodyHeightElement !== targetElement) {
+				if (originalBodyHeight !== null) {
+					bodyHeightElement.style.setProperty('--body-height', originalBodyHeight);
+				}
+				bodyHeightElement = null;
+				originalBodyHeight = null;
+				adjustedBodyHeight = null;
+			}
+
+			if (!bodyHeightElement) {
+				bodyHeightElement = targetElement;
+			}
+
+			// Update baseline if core recalculated --body-height while banner is active.
+			if (originalBodyHeight === null || currentHeight !== adjustedBodyHeight) {
 				originalBodyHeight = currentHeight;
 			}
-			// Adjust --body-height globally to compensate for banner
-			root.style.setProperty('--body-height', `calc(${originalBodyHeight} - ${bannerHeight}px)`);
-		} else if (bannerHeight === 0 && originalBodyHeight !== null) {
+
+			adjustedBodyHeight = `calc(${originalBodyHeight} - ${bannerHeight}px)`;
+			bodyHeightElement.style.setProperty('--body-height', adjustedBodyHeight);
+		} else if (bannerHeight === 0 && originalBodyHeight !== null && bodyHeightElement) {
 			// Reset to original height when banner is removed
-			root.style.setProperty('--body-height', originalBodyHeight);
+			bodyHeightElement.style.setProperty('--body-height', originalBodyHeight);
 			originalBodyHeight = null;
+			adjustedBodyHeight = null;
+			bodyHeightElement = null;
 		}
 	}
 
