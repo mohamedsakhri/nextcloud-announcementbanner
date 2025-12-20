@@ -14,7 +14,7 @@
  * Optional translations for banner message and read-more label (fallback to default).
  * Live preview in admin settings before publishing to everyone.
  * Changes take effect immediately after saving.]]></description>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
     <licence>gpl3</licence>
     <author>Mohamed Sakhri</author>
     <namespace>AnnouncementBanner</namespace>
