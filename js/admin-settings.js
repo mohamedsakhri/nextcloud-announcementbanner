@@ -1,6 +1,20 @@
 (function() {
 	const APP_ID = 'announcementbanner';
 
+	const defaultBanner = {
+		id: '',
+		enabled: false,
+		message: '',
+		messageTranslations: {},
+		variant: 'info',
+		dismissible: true,
+		readMoreText: '',
+		readMoreTextTranslations: {},
+		readMoreUrl: '',
+		scheduleStart: '',
+		scheduleEnd: '',
+	};
+
 	function toIsoDateTime(value) {
 		if (!value) {
 			return '';
@@ -24,10 +38,29 @@
 		return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 	}
 
-	function serializeForm(form, { useCurrentMessage, fallbackMessage }) {
+	function formatDateTime(value) {
+		if (!value) {
+			return '\u2014';
+		}
+		const date = new Date(value);
+		if (Number.isNaN(date.getTime())) {
+			return '\u2014';
+		}
+		try {
+			return new Intl.DateTimeFormat(undefined, {
+				dateStyle: 'medium',
+				timeStyle: 'short',
+				timeZoneName: 'short',
+			}).format(date);
+		} catch {
+			return date.toLocaleString(undefined, { timeZoneName: 'short' });
+		}
+	}
+
+	function serializeForm(form) {
 		const formData = new FormData(form);
 		return {
-			message: useCurrentMessage ? (formData.get('message') ?? '') : (fallbackMessage ?? ''),
+			message: formData.get('message') ?? '',
 			readMoreText: formData.get('readMoreText') ?? '',
 			readMoreUrl: formData.get('readMoreUrl') ?? '',
 			variant: formData.get('variant') ?? 'info',
@@ -170,14 +203,143 @@
 				addBtn.addEventListener('click', () => addTranslationRow(field));
 			}
 		});
+
+		document.querySelectorAll('.announcementbanner-translation-row .announcementbanner-remove-translation').forEach((btn) => {
+			btn.addEventListener('click', (event) => {
+				event.currentTarget.closest('.announcementbanner-translation-row')?.remove();
+			});
+		});
 	}
 
-	function initFormHandler() {
-		const form = document.querySelector('#announcementbanner-admin .announcementbanner-form');
-		if (!form || !window.OC) {
+	function escapeHtml(input) {
+		const div = document.createElement('div');
+		div.appendChild(document.createTextNode(input));
+		return div.innerHTML;
+	}
+
+	function buildBannerElement(data, { showDismiss = true } = {}) {
+		const banner = document.createElement('div');
+		const variant = data.variant || 'info';
+		banner.className = 'announcementbanner announcementbanner--' + variant;
+		banner.setAttribute('role', 'status');
+		banner.setAttribute('aria-live', 'polite');
+
+		const icon = document.createElement('span');
+		icon.className = 'announcementbanner__icon';
+		icon.setAttribute('aria-hidden', 'true');
+		// Inline SVG icon (megaphone, matches app.svg)
+		icon.innerHTML = `
+			<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+				<g style="fill:currentColor">
+					<path d="M0 0h24v24H0z" fill="none"/>
+					<path d="M15.203 1.725c-.591 1.085-1.335 2.462-1.906 3.517.585.315 1.175.639 1.76.954.572-1.055 1.32-2.423 1.907-3.518-.585-.314-1.175-.638-1.76-.953zM10.404 6.131L7.113 10.943l-3.635 1.67c-1 .459-1.442 1.653-.983 2.653l.834 1.816c.459 1 .653 2.194 1.653 1.735l.908-.416 1.67 3.635 1.818-.836-1.67-3.635.908-.416 5.795.639-5.008-10.904zM20.67 6.918l-3.635 1.67.834 1.816 3.635-1.67-.834-1.816zM18.395 13.465c-.138.657-.275 1.314-.418 1.963 1.169.244 2.698.576 3.906.835.142-.648.279-1.304.421-1.953-1.209-.259-2.738-.592-3.909-.845z"/>
+					<circle cx="12.662" cy="11.867" r="1.132" />
+				</g>
+			</svg>
+		`;
+		banner.appendChild(icon);
+
+		const message = document.createElement('div');
+		message.className = 'announcementbanner__message';
+		let html = escapeHtml(data.message);
+		if (data.readMoreText && data.readMoreUrl) {
+			const icon = '\u2197';
+			html += ' <a class="announcementbanner__readmore" href="' + escapeHtml(data.readMoreUrl) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(data.readMoreText) + ' ' + icon + '</a>';
+		}
+		message.innerHTML = html;
+		banner.appendChild(message);
+
+		if (data.dismissible && showDismiss) {
+			const closeButton = document.createElement('button');
+			closeButton.className = 'announcementbanner__close';
+			closeButton.setAttribute('type', 'button');
+			closeButton.setAttribute('aria-label', t(APP_ID, 'Dismiss banner'));
+			const svgNS = 'http://www.w3.org/2000/svg';
+			const svg = document.createElementNS(svgNS, 'svg');
+			svg.setAttribute('viewBox', '0 0 24 24');
+			svg.setAttribute('fill', 'none');
+			svg.setAttribute('stroke', 'currentColor');
+			svg.setAttribute('stroke-width', '2');
+			svg.setAttribute('stroke-linecap', 'round');
+			svg.setAttribute('stroke-linejoin', 'round');
+			const path1 = document.createElementNS(svgNS, 'path');
+			path1.setAttribute('d', 'M18 6 6 18');
+			const path2 = document.createElementNS(svgNS, 'path');
+			path2.setAttribute('d', 'm6 6 12 12');
+			svg.appendChild(path1);
+			svg.appendChild(path2);
+			closeButton.appendChild(svg);
+			closeButton.addEventListener('click', () => {
+				banner.remove();
+			});
+			banner.appendChild(closeButton);
+		}
+
+		return banner;
+	}
+
+	function updatePageBanner(payload, previewContainer) {
+		if (!previewContainer) {
 			return;
 		}
 
+		previewContainer.innerHTML = '';
+		const hasMessage = !!(payload.message && payload.message.trim());
+
+		if (payload.enabled && hasMessage) {
+			const banner = buildBannerElement(payload);
+			previewContainer.appendChild(banner);
+		} else {
+			const placeholder = document.createElement('div');
+			placeholder.className = 'announcementbanner-preview-placeholder';
+			placeholder.textContent = t(APP_ID, 'Banner disabled');
+			previewContainer.appendChild(placeholder);
+		}
+	}
+
+	async function requestJson(url, { method = 'GET', body } = {}) {
+		const options = {
+			method,
+			headers: {
+				Accept: 'application/json',
+			},
+		};
+
+		if (window.OC && OC.requestToken) {
+			options.headers.requesttoken = OC.requestToken;
+		}
+
+		if (method !== 'GET') {
+			options.headers['Content-Type'] = 'application/json';
+			options.body = JSON.stringify(body ?? {});
+		}
+
+		const response = await fetch(url, options);
+		const data = await response.json().catch(() => ({}));
+		if (!response.ok) {
+			const message = data?.message || 'Request failed';
+			throw new Error(message);
+		}
+		return data;
+	}
+
+	function initFormHandler() {
+		const root = document.querySelector('#announcementbanner-admin');
+		const form = root?.querySelector('.announcementbanner-form');
+		const overview = root?.querySelector('.announcementbanner-overview');
+		const detail = root?.querySelector('[data-announcementbanner-detail]');
+		const list = root?.querySelector('[data-announcementbanner-list]');
+		const emptyState = root?.querySelector('[data-announcementbanner-empty]');
+		const count = root?.querySelector('[data-announcementbanner-count]');
+		const addButton = root?.querySelector('#announcementbanner-add');
+		const backButton = root?.querySelector('#announcementbanner-back');
+		const detailTitle = root?.querySelector('#announcementbanner-detail-title');
+
+		if (!root || !form || !window.OC) {
+			return;
+		}
+
+		const idInput = form.querySelector('#announcementbanner-id');
 		const messageInput = form.querySelector('#announcementbanner-message');
 		const readMoreTextInput = form.querySelector('#announcementbanner-readmore-text');
 		const readMoreUrlInput = form.querySelector('#announcementbanner-readmore-url');
@@ -186,362 +348,245 @@
 		const variantSelect = form.querySelector('#announcementbanner-variant');
 		const enabledInput = form.querySelector('#announcementbanner-enabled');
 		const dismissibleInput = form.querySelector('#announcementbanner-dismissible');
-		const previewContainer = document.querySelector('.announcementbanner-preview');
+		const previewContainer = root.querySelector('.announcementbanner-preview');
 
-		let lastSavedMessage = messageInput ? messageInput.value : '';
-		let lastSavedReadMoreText = readMoreTextInput ? readMoreTextInput.value : '';
-		let lastSavedReadMoreUrl = readMoreUrlInput ? readMoreUrlInput.value : '';
-		let lastSavedScheduleStart = scheduleStartInput ? toIsoDateTime(scheduleStartInput.value) : '';
-		let lastSavedScheduleEnd = scheduleEndInput ? toIsoDateTime(scheduleEndInput.value) : '';
-		let lastSavedVariant = variantSelect ? variantSelect.value : 'info';
-		let lastSavedEnabled = enabledInput ? enabledInput.checked : false;
-		let lastSavedDismissible = dismissibleInput ? dismissibleInput.checked : true;
-		let lastSavedMessageTranslations = {};
-		let lastSavedReadMoreTextTranslations = {};
+		const labels = {
+			status: {
+				active: t(APP_ID, 'Active'),
+				scheduled: t(APP_ID, 'Scheduled'),
+				expired: t(APP_ID, 'Expired'),
+				disabled: t(APP_ID, 'Disabled'),
+			},
+			edit: t(APP_ID, 'Edit banner'),
+			remove: t(APP_ID, 'Delete banner'),
+			editTitle: t(APP_ID, 'Edit banner'),
+			newTitle: t(APP_ID, 'New banner'),
+			deleteConfirm: t(APP_ID, 'Delete this banner?'),
+		};
 
 		initTranslationControls();
 
-		form.querySelectorAll('.announcementbanner-translation-row .announcementbanner-remove-translation').forEach((btn) => {
-			btn.addEventListener('click', (event) => {
-				event.currentTarget.closest('.announcementbanner-translation-row')?.remove();
+		function toggleView(showDetail) {
+			if (overview) {
+				overview.classList.toggle('is-hidden', showDetail);
+			}
+			if (detail) {
+				detail.classList.toggle('is-hidden', !showDetail);
+			}
+		}
+
+		function resetForm() {
+			setFormValues(defaultBanner);
+			if (idInput) {
+				idInput.value = '';
+			}
+			if (detailTitle) {
+				detailTitle.textContent = labels.newTitle;
+			}
+		}
+
+		function setFormValues(banner) {
+			if (messageInput) {
+				messageInput.value = banner.message || '';
+			}
+			if (readMoreTextInput) {
+				readMoreTextInput.value = banner.readMoreText || '';
+			}
+			if (readMoreUrlInput) {
+				readMoreUrlInput.value = banner.readMoreUrl || '';
+			}
+			if (scheduleStartInput) {
+				scheduleStartInput.value = toLocalInputValue(banner.scheduleStart || '');
+			}
+			if (scheduleEndInput) {
+				scheduleEndInput.value = toLocalInputValue(banner.scheduleEnd || '');
+			}
+			if (variantSelect) {
+				variantSelect.value = banner.variant || 'info';
+			}
+			if (enabledInput) {
+				enabledInput.checked = !!banner.enabled;
+			}
+			if (dismissibleInput) {
+				dismissibleInput.checked = !!banner.dismissible;
+			}
+
+			renderTranslations('message', banner.messageTranslations || {});
+			renderTranslations('readMoreText', banner.readMoreTextTranslations || {});
+			updatePageBanner(serializeForm(form), previewContainer);
+		}
+
+		function renderBannerRow(banner) {
+			const row = document.createElement('div');
+			row.className = 'announcementbanner-overview__row';
+
+			const statusCell = document.createElement('div');
+			const badge = document.createElement('span');
+			const statusKey = banner.status || 'disabled';
+			badge.className = `announcementbanner-status__badge announcementbanner-status__badge--${statusKey}`;
+			badge.textContent = labels.status[statusKey] || statusKey;
+			statusCell.appendChild(badge);
+
+			const previewCell = document.createElement('div');
+			previewCell.className = 'announcementbanner-overview__preview';
+			previewCell.appendChild(buildBannerElement(banner, { showDismiss: false }));
+
+			const startCell = document.createElement('div');
+			startCell.textContent = formatDateTime(banner.scheduleStart);
+
+			const endCell = document.createElement('div');
+			endCell.textContent = formatDateTime(banner.scheduleEnd);
+
+			const actionsCell = document.createElement('div');
+			actionsCell.className = 'announcementbanner-row-actions';
+			const editButton = document.createElement('button');
+			editButton.type = 'button';
+			editButton.className = 'announcementbanner-action';
+			editButton.title = labels.edit;
+			editButton.setAttribute('aria-label', labels.edit);
+			editButton.innerHTML = `<img src="${OC.imagePath('core', 'actions/edit')}" alt="">`;
+			editButton.addEventListener('click', () => openDetail(banner.id));
+
+			const deleteButton = document.createElement('button');
+			deleteButton.type = 'button';
+			deleteButton.className = 'announcementbanner-action';
+			deleteButton.title = labels.remove;
+			deleteButton.setAttribute('aria-label', labels.remove);
+			deleteButton.innerHTML = `<img src="${OC.imagePath('core', 'actions/delete')}" alt="">`;
+			deleteButton.addEventListener('click', async () => {
+				if (!confirm(labels.deleteConfirm)) {
+					return;
+				}
+				await deleteBanner(banner.id);
 			});
-		});
 
-		function escapeHtml(input) {
-			const div = document.createElement('div');
-			div.appendChild(document.createTextNode(input));
-			return div.innerHTML;
+			actionsCell.appendChild(editButton);
+			actionsCell.appendChild(deleteButton);
+
+			row.appendChild(statusCell);
+			row.appendChild(previewCell);
+			row.appendChild(startCell);
+			row.appendChild(endCell);
+			row.appendChild(actionsCell);
+
+			return row;
 		}
 
-		function buildBannerElement(data) {
-			const banner = document.createElement('div');
-			banner.className = 'announcementbanner announcementbanner--' + data.variant;
-			banner.setAttribute('role', 'status');
-			banner.setAttribute('aria-live', 'polite');
-
-						const icon = document.createElement('span');
-						icon.className = 'announcementbanner__icon';
-						icon.setAttribute('aria-hidden', 'true');
-						// Inline SVG icon (megaphone, matches app.svg)
-						icon.innerHTML = `
-							<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-								<g style="fill:currentColor">
-									<path d="M0 0h24v24H0z" fill="none"/>
-									<path d="M15.203 1.725c-.591 1.085-1.335 2.462-1.906 3.517.585.315 1.175.639 1.76.954.572-1.055 1.32-2.423 1.907-3.518-.585-.314-1.175-.638-1.76-.953zM10.404 6.131L7.113 10.943l-3.635 1.67c-1 .459-1.442 1.653-.983 2.653l.834 1.816c.459 1 .653 2.194 1.653 1.735l.908-.416 1.67 3.635 1.818-.836-1.67-3.635.908-.416 5.795.639-5.008-10.904zM20.67 6.918l-3.635 1.67.834 1.816 3.635-1.67-.834-1.816zM18.395 13.465c-.138.657-.275 1.314-.418 1.963 1.169.244 2.698.576 3.906.835.142-.648.279-1.304.421-1.953-1.209-.259-2.738-.592-3.909-.845z"/>
-									<circle cx="12.662" cy="11.867" r="1.132" />
-								</g>
-							</svg>
-						`;
-						banner.appendChild(icon);
-
-			const message = document.createElement('div');
-			message.className = 'announcementbanner__message';
-			let html = escapeHtml(data.message);
-			if (data.readMoreText && data.readMoreUrl) {
-				const icon = '\u2197';
-				html += ' <a class="announcementbanner__readmore" href="' + escapeHtml(data.readMoreUrl) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(data.readMoreText) + ' ' + icon + '</a>';
-			}
-			message.innerHTML = html;
-			banner.appendChild(message);
-
-			if (data.dismissible) {
-				const closeButton = document.createElement('button');
-				closeButton.className = 'announcementbanner__close';
-				closeButton.setAttribute('type', 'button');
-				closeButton.setAttribute('aria-label', t(APP_ID, 'Dismiss banner'));
-				const svgNS = 'http://www.w3.org/2000/svg';
-				const svg = document.createElementNS(svgNS, 'svg');
-				svg.setAttribute('viewBox', '0 0 24 24');
-				svg.setAttribute('fill', 'none');
-				svg.setAttribute('stroke', 'currentColor');
-				svg.setAttribute('stroke-width', '2');
-				svg.setAttribute('stroke-linecap', 'round');
-				svg.setAttribute('stroke-linejoin', 'round');
-				const path1 = document.createElementNS(svgNS, 'path');
-				path1.setAttribute('d', 'M18 6 6 18');
-				const path2 = document.createElementNS(svgNS, 'path');
-				path2.setAttribute('d', 'm6 6 12 12');
-				svg.appendChild(path1);
-				svg.appendChild(path2);
-				closeButton.appendChild(svg);
-				closeButton.addEventListener('click', () => {
-					banner.remove();
-				});
-				banner.appendChild(closeButton);
-			}
-
-			return banner;
-		}
-
-		function insertBanner(banner) {
-			if (previewContainer) {
-				previewContainer.innerHTML = '';
-				previewContainer.appendChild(banner);
+		function renderOverview(banners) {
+			if (!list) {
 				return;
 			}
 
-			const header = document.getElementById('header');
-			if (header && header.parentNode) {
-				header.parentNode.insertBefore(banner, header.nextSibling);
-				return;
+			list.innerHTML = '';
+			const bannerList = Array.isArray(banners) ? banners : [];
+			bannerList.forEach((banner) => {
+				list.appendChild(renderBannerRow(banner));
+			});
+
+			if (count) {
+				count.textContent = String(bannerList.length);
 			}
 
-			const body = document.body;
-			if (body) {
-				if (body.firstChild) {
-					body.insertBefore(banner, body.firstChild);
-				} else {
-					body.appendChild(banner);
-				}
-			}
-		}
-
-		function updatePageBanner(payload) {
-			if (!previewContainer) {
-				document.querySelectorAll('.announcementbanner').forEach((node) => node.remove());
-			} else {
-				previewContainer.innerHTML = '';
-			}
-
-			const hasMessage = !!(payload.message && payload.message.trim());
-
-			if (payload.enabled && hasMessage) {
-				const banner = buildBannerElement(payload);
-
-				if (!previewContainer) {
-					const header = document.getElementById('header');
-					if (header) {
-						const headerHeight = Math.max(0, Math.ceil(header.getBoundingClientRect().height || 0));
-						if (headerHeight > 0) {
-							banner.style.setProperty('--announcementbanner-offset', `${headerHeight}px`);
-						}
-					}
-				}
-
-				insertBanner(banner);
-			} else if (previewContainer) {
-				const placeholder = document.createElement('div');
-				placeholder.className = 'announcementbanner-preview-placeholder';
-				placeholder.textContent = t(APP_ID, 'Banner disabled');
-				previewContainer.appendChild(placeholder);
+			if (emptyState) {
+				emptyState.hidden = bannerList.length > 0;
 			}
 		}
 
-		async function submitSettings(payload, { showSuccess = true } = {}) {
-			const url = OC.generateUrl('/apps/' + APP_ID + '/banner');
-
+		async function loadBanners() {
+			const url = OC.generateUrl('/apps/' + APP_ID + '/banners');
 			try {
-				const response = await fetch(url, {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-						'requesttoken': OC.requestToken,
-					},
-					body: JSON.stringify(payload),
-				});
-
-				const data = await response.json();
-				if (!response.ok) {
-					throw new Error(data?.message ?? 'Request failed');
-				}
-
-				if (showSuccess) {
-					OC.Notification.showTemporary(t(APP_ID, 'Banner settings saved'));
-				}
-
-				if (typeof data.message === 'string') {
-					lastSavedMessage = data.message;
-					if (messageInput) {
-						messageInput.value = data.message;
-					}
-				}
-				if (typeof data.readMoreText === 'string') {
-					lastSavedReadMoreText = data.readMoreText;
-					if (readMoreTextInput) {
-						readMoreTextInput.value = data.readMoreText;
-					}
-				}
-				if (typeof data.readMoreUrl === 'string') {
-					lastSavedReadMoreUrl = data.readMoreUrl;
-					if (readMoreUrlInput) {
-						readMoreUrlInput.value = data.readMoreUrl;
-					}
-				}
-				if (typeof data.scheduleStart === 'string') {
-					lastSavedScheduleStart = data.scheduleStart;
-					if (scheduleStartInput) {
-						scheduleStartInput.value = toLocalInputValue(data.scheduleStart);
-					}
-				}
-				if (typeof data.scheduleEnd === 'string') {
-					lastSavedScheduleEnd = data.scheduleEnd;
-					if (scheduleEndInput) {
-						scheduleEndInput.value = toLocalInputValue(data.scheduleEnd);
-					}
-				}
-				if (data.messageTranslations && typeof data.messageTranslations === 'object') {
-					lastSavedMessageTranslations = data.messageTranslations;
-				}
-				if (data.readMoreTextTranslations && typeof data.readMoreTextTranslations === 'object') {
-					lastSavedReadMoreTextTranslations = data.readMoreTextTranslations;
-				}
-				if (typeof data.variant === 'string') {
-					lastSavedVariant = data.variant;
-					if (variantSelect) {
-						variantSelect.value = data.variant;
-					}
-				}
-				if (typeof data.enabled === 'boolean') {
-					lastSavedEnabled = data.enabled;
-					if (enabledInput) {
-						enabledInput.checked = data.enabled;
-					}
-				}
-				if (typeof data.dismissible === 'boolean') {
-					lastSavedDismissible = data.dismissible;
-					if (dismissibleInput) {
-						dismissibleInput.checked = data.dismissible;
-					}
-				}
-
-				renderTranslations('message', lastSavedMessageTranslations);
-				renderTranslations('readMoreText', lastSavedReadMoreTextTranslations);
-				updatePageBanner({
-					enabled: lastSavedEnabled,
-					message: lastSavedMessage,
-					readMoreText: lastSavedReadMoreText,
-					readMoreUrl: lastSavedReadMoreUrl,
-					variant: lastSavedVariant,
-					dismissible: lastSavedDismissible,
-					scheduleStart: lastSavedScheduleStart,
-					scheduleEnd: lastSavedScheduleEnd,
-				});
+				const data = await requestJson(url);
+				renderOverview(Array.isArray(data) ? data : []);
 			} catch (error) {
 				console.error(error);
-				OC.Notification.showTemporary(t(APP_ID, 'Unable to save banner settings'));
+				OC.Notification.showTemporary(t(APP_ID, 'Unable to load banners'));
+			}
+		}
+
+		async function openDetail(id) {
+			const url = OC.generateUrl('/apps/' + APP_ID + '/banners/' + id);
+			try {
+				const banner = await requestJson(url);
+				if (idInput) {
+					idInput.value = banner.id || '';
+				}
+				if (detailTitle) {
+					detailTitle.textContent = labels.editTitle;
+				}
+				setFormValues(banner);
+				toggleView(true);
+			} catch (error) {
+				console.error(error);
+				OC.Notification.showTemporary(t(APP_ID, 'Unable to load banner'));
+			}
+		}
+
+		async function saveBanner() {
+			const payload = serializeForm(form);
+			const id = idInput?.value?.trim();
+			const isUpdate = !!id;
+			const url = isUpdate
+				? OC.generateUrl('/apps/' + APP_ID + '/banners/' + id)
+				: OC.generateUrl('/apps/' + APP_ID + '/banners');
+			const method = isUpdate ? 'PUT' : 'POST';
+
+			try {
+				await requestJson(url, { method, body: payload });
+				OC.Notification.showTemporary(t(APP_ID, 'Banner saved'));
+				await loadBanners();
+				toggleView(false);
+			} catch (error) {
+				console.error(error);
+				OC.Notification.showTemporary(t(APP_ID, 'Unable to save banner'));
+			}
+		}
+
+		async function deleteBanner(id) {
+			const url = OC.generateUrl('/apps/' + APP_ID + '/banners/' + id);
+			try {
+				await requestJson(url, { method: 'DELETE' });
+				OC.Notification.showTemporary(t(APP_ID, 'Banner deleted'));
+				await loadBanners();
+			} catch (error) {
+				console.error(error);
+				OC.Notification.showTemporary(t(APP_ID, 'Unable to delete banner'));
 			}
 		}
 
 		form.addEventListener('submit', async (event) => {
 			event.preventDefault();
-			const payload = serializeForm(form, { useCurrentMessage: true, fallbackMessage: lastSavedMessage });
-			await submitSettings(payload, { showSuccess: true });
-			window.location.reload();
+			await saveBanner();
 		});
 
 		[variantSelect, enabledInput, dismissibleInput].forEach((el) => {
 			if (!el) {
 				return;
 			}
-			el.addEventListener('change', () => {
-				renderPreviewFromForm();
-			});
+			el.addEventListener('change', () => updatePageBanner(serializeForm(form), previewContainer));
 		});
 
-		if (messageInput) {
-			messageInput.addEventListener('input', () => {
-				renderPreviewFromForm();
+		[messageInput, readMoreTextInput, readMoreUrlInput, scheduleStartInput, scheduleEndInput].forEach((el) => {
+			if (!el) {
+				return;
+			}
+			el.addEventListener('input', () => updatePageBanner(serializeForm(form), previewContainer));
+		});
+
+		if (addButton) {
+			addButton.addEventListener('click', () => {
+				resetForm();
+				toggleView(true);
 			});
 		}
-		if (readMoreTextInput) {
-			readMoreTextInput.addEventListener('input', renderPreviewFromForm);
-		}
-		if (readMoreUrlInput) {
-			readMoreUrlInput.addEventListener('input', renderPreviewFromForm);
-		}
 
-		function renderPreviewFromForm() {
-			const payload = serializeForm(form, { useCurrentMessage: true, fallbackMessage: lastSavedMessage });
-			updatePageBanner(payload);
+		if (backButton) {
+			backButton.addEventListener('click', () => {
+				toggleView(false);
+			});
 		}
 
-		const syncFromServer = async () => {
-			try {
-				const url = OC.generateUrl('/apps/' + APP_ID + '/banner');
-				const response = await fetch(url, { headers: { Accept: 'application/json' } });
-				if (!response.ok) {
-					renderPreviewFromForm();
-					return;
-				}
-				const data = await response.json();
-				if (data && typeof data === 'object') {
-					if (typeof data.message === 'string') {
-						lastSavedMessage = data.message;
-						if (messageInput) {
-							messageInput.value = data.message;
-						}
-					}
-					if (typeof data.readMoreText === 'string') {
-						lastSavedReadMoreText = data.readMoreText;
-						if (readMoreTextInput) {
-							readMoreTextInput.value = data.readMoreText;
-						}
-					}
-					if (typeof data.readMoreUrl === 'string') {
-						lastSavedReadMoreUrl = data.readMoreUrl;
-						if (readMoreUrlInput) {
-							readMoreUrlInput.value = data.readMoreUrl;
-						}
-					}
-					if (typeof data.scheduleStart === 'string') {
-						lastSavedScheduleStart = data.scheduleStart;
-						if (scheduleStartInput) {
-							scheduleStartInput.value = toLocalInputValue(data.scheduleStart);
-						}
-					}
-					if (typeof data.scheduleEnd === 'string') {
-						lastSavedScheduleEnd = data.scheduleEnd;
-						if (scheduleEndInput) {
-							scheduleEndInput.value = toLocalInputValue(data.scheduleEnd);
-						}
-					}
-					if (data.messageTranslations && typeof data.messageTranslations === 'object') {
-						lastSavedMessageTranslations = data.messageTranslations;
-					}
-					if (data.readMoreTextTranslations && typeof data.readMoreTextTranslations === 'object') {
-						lastSavedReadMoreTextTranslations = data.readMoreTextTranslations;
-					}
-					if (typeof data.variant === 'string') {
-						lastSavedVariant = data.variant;
-						if (variantSelect) {
-							variantSelect.value = data.variant;
-						}
-					}
-					if (typeof data.enabled === 'boolean') {
-						lastSavedEnabled = data.enabled;
-						if (enabledInput) {
-							enabledInput.checked = data.enabled;
-						}
-					}
-					if (typeof data.dismissible === 'boolean') {
-						lastSavedDismissible = data.dismissible;
-						if (dismissibleInput) {
-							dismissibleInput.checked = data.dismissible;
-						}
-					}
-					renderTranslations('message', lastSavedMessageTranslations);
-					renderTranslations('readMoreText', lastSavedReadMoreTextTranslations);
-					updatePageBanner({
-						enabled: lastSavedEnabled,
-						message: lastSavedMessage,
-						readMoreText: lastSavedReadMoreText,
-						readMoreUrl: lastSavedReadMoreUrl,
-						variant: lastSavedVariant,
-						dismissible: lastSavedDismissible,
-						scheduleStart: lastSavedScheduleStart,
-						scheduleEnd: lastSavedScheduleEnd,
-					});
-				} else {
-					renderPreviewFromForm();
-				}
-			} catch (error) {
-				console.warn('Unable to render banner preview', error);
-				renderPreviewFromForm();
-			}
-		};
-
-		// Always show something in preview on load
-		syncFromServer();
+		resetForm();
+		loadBanners();
 	}
 
 	if (document.readyState === 'loading') {
