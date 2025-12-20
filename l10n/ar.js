@@ -19,6 +19,8 @@ OC.L10N.register(
     "Optional link label, e.g. “Read more”" : "تسمية رابط اختيارية، مثل \"اقرأ المزيد\"",
     "Read more link" : "رابط قراءة المزيد",
     "Add a link for more details" : "أضف رابطًا لمزيد من التفاصيل",
+    "Schedule start (optional)" : "بداية الجدولة (اختياري)",
+    "Schedule end (optional)" : "نهاية الجدولة (اختياري)",
     "Translations" : "الترجمات",
     "Add translation" : "إضافة ترجمة",
     "Language code (e.g. en, de, fr)" : "رمز اللغة (مثل en و de و fr)",

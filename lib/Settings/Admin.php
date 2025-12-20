@@ -46,6 +46,8 @@ class Admin implements ISettings {
                     'readMoreTextPlaceholder' => $this->l10n->t('Optional link label, e.g. “Read more”'),
                     'readMoreUrl' => $this->l10n->t('Read more link'),
                     'readMoreUrlPlaceholder' => $this->l10n->t('Add a link for more details'),
+                    'scheduleStart' => $this->l10n->t('Schedule start (optional)'),
+                    'scheduleEnd' => $this->l10n->t('Schedule end (optional)'),
                     'translationsTitle' => $this->l10n->t('Translations'),
                     'translationsAddLabel' => $this->l10n->t('Add translation'),
                     'translationLangPlaceholder' => $this->l10n->t('Language code (e.g. en, de, fr)'),

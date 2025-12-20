@@ -19,6 +19,8 @@ OC.L10N.register(
     "Optional link label, e.g. “Read more”" : "Optionale Link-Beschriftung, z. B. „Weiterlesen“",
     "Read more link" : "Weiterlesen-Link",
     "Add a link for more details" : "Link für weitere Details hinzufügen",
+    "Schedule start (optional)" : "Zeitplanstart (optional)",
+    "Schedule end (optional)" : "Zeitplanende (optional)",
     "Translations" : "Übersetzungen",
     "Add translation" : "Übersetzung hinzufügen",
     "Language code (e.g. en, de, fr)" : "Sprachcode (z. B. de, en, fr)",

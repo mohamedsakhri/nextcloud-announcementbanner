@@ -88,6 +88,33 @@
 		};
 	}
 
+	function parseScheduleValue(value) {
+		if (!value) {
+			return null;
+		}
+		const time = Date.parse(value);
+		if (Number.isNaN(time)) {
+			return null;
+		}
+		return time;
+	}
+
+	function isScheduleActive(payload) {
+		const start = parseScheduleValue(payload.scheduleStart);
+		const end = parseScheduleValue(payload.scheduleEnd);
+		const now = Date.now();
+
+		if (start !== null && now < start) {
+			return false;
+		}
+
+		if (end !== null && now > end) {
+			return false;
+		}
+
+		return true;
+	}
+
 	function buildBannerElement(data) {
 		const banner = document.createElement('div');
 		banner.className = 'announcementbanner announcementbanner--' + data.variant;
@@ -258,6 +285,10 @@
 		}
 
 		if (!payload || !payload.enabled || !payload.message) {
+			return;
+		}
+
+		if (!isScheduleActive(payload)) {
 			return;
 		}
 

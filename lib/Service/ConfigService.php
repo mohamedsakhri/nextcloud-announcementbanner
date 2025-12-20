@@ -17,6 +17,8 @@ class ConfigService {
     private const KEY_READ_MORE_TEXT = 'read_more_text';
     private const KEY_READ_MORE_TEXT_TRANSLATIONS = 'read_more_text_translations';
     private const KEY_READ_MORE_URL = 'read_more_url';
+    private const KEY_SCHEDULE_START = 'schedule_start';
+    private const KEY_SCHEDULE_END = 'schedule_end';
 
     /**
      * @var string[]
@@ -33,7 +35,7 @@ class ConfigService {
     }
 
     /**
-     * @return array{enabled: bool, message: string, messageTranslations: array<string, string>, variant: string, dismissible: bool, readMoreText: string, readMoreTextTranslations: array<string, string>, readMoreUrl: string}
+     * @return array{enabled: bool, message: string, messageTranslations: array<string, string>, variant: string, dismissible: bool, readMoreText: string, readMoreTextTranslations: array<string, string>, readMoreUrl: string, scheduleStart: string, scheduleEnd: string}
      */
     public function getBannerSettings(): array {
         return [
@@ -47,11 +49,13 @@ class ConfigService {
             'readMoreText' => $this->getAppValue(self::KEY_READ_MORE_TEXT, ''),
             'readMoreTextTranslations' => $this->getTranslations(self::KEY_READ_MORE_TEXT_TRANSLATIONS),
             'readMoreUrl' => $this->getAppValue(self::KEY_READ_MORE_URL, ''),
+            'scheduleStart' => $this->getAppValue(self::KEY_SCHEDULE_START, ''),
+            'scheduleEnd' => $this->getAppValue(self::KEY_SCHEDULE_END, ''),
         ];
     }
 
     /**
-     * @return array{enabled: bool, message: string, messageTranslations: array<string, string>, variant: string, dismissible: bool, readMoreText: string, readMoreTextTranslations: array<string, string>, readMoreUrl: string}
+     * @return array{enabled: bool, message: string, messageTranslations: array<string, string>, variant: string, dismissible: bool, readMoreText: string, readMoreTextTranslations: array<string, string>, readMoreUrl: string, scheduleStart: string, scheduleEnd: string}
      */
     public function saveBannerSettings(
         bool $enabled,
@@ -62,6 +66,8 @@ class ConfigService {
         string $readMoreText,
         array $readMoreTextTranslations,
         string $readMoreUrl,
+        string $scheduleStart,
+        string $scheduleEnd,
     ): array {
         $message = trim($message);
         $messageTranslations = $this->normalizeTranslations($messageTranslations);
@@ -69,6 +75,16 @@ class ConfigService {
         $readMoreText = trim($readMoreText);
         $readMoreTextTranslations = $this->normalizeTranslations($readMoreTextTranslations);
         $readMoreUrl = trim($readMoreUrl);
+        $scheduleStart = $this->normalizeScheduleValue($scheduleStart);
+        $scheduleEnd = $this->normalizeScheduleValue($scheduleEnd);
+
+        if ($scheduleStart !== '' && $scheduleEnd !== '') {
+            $startTime = new \DateTimeImmutable($scheduleStart);
+            $endTime = new \DateTimeImmutable($scheduleEnd);
+            if ($startTime > $endTime) {
+                throw new InvalidArgumentException('Schedule end must be after schedule start.');
+            }
+        }
 
         if ($enabled && $message === '') {
             throw new InvalidArgumentException('Message is required when the banner is enabled.');
@@ -82,6 +98,8 @@ class ConfigService {
         $this->setAppValue(self::KEY_READ_MORE_TEXT, $readMoreText);
         $this->setAppValue(self::KEY_READ_MORE_TEXT_TRANSLATIONS, json_encode($readMoreTextTranslations) ?: '');
         $this->setAppValue(self::KEY_READ_MORE_URL, $readMoreUrl);
+        $this->setAppValue(self::KEY_SCHEDULE_START, $scheduleStart);
+        $this->setAppValue(self::KEY_SCHEDULE_END, $scheduleEnd);
 
         return $this->getBannerSettings();
     }
@@ -98,6 +116,8 @@ class ConfigService {
         $readMoreText = $settings['readMoreText'] ?? '';
         $readMoreTextTranslations = $settings['readMoreTextTranslations'] ?? [];
         $readMoreUrl = $settings['readMoreUrl'] ?? '';
+        $scheduleStart = $settings['scheduleStart'] ?? '';
+        $scheduleEnd = $settings['scheduleEnd'] ?? '';
         $enabled = $settings['enabled'] ?? false;
         $dismissible = $settings['dismissible'] ?? false;
 
@@ -108,6 +128,8 @@ class ConfigService {
             $readMoreText,
             $this->encodeTranslations($readMoreTextTranslations),
             $readMoreUrl,
+            $scheduleStart,
+            $scheduleEnd,
             $enabled ? '1' : '0',
             $dismissible ? '1' : '0',
         ]));
@@ -170,6 +192,21 @@ class ConfigService {
         ksort($normalized);
 
         return $normalized;
+    }
+
+    private function normalizeScheduleValue(string $value): string {
+        $value = trim($value);
+        if ($value === '') {
+            return '';
+        }
+
+        try {
+            $date = new \DateTimeImmutable($value);
+        } catch (\Exception $e) {
+            throw new InvalidArgumentException('Schedule value must be a valid date/time.');
+        }
+
+        return $date->format(\DateTimeInterface::ATOM);
     }
 
     /**

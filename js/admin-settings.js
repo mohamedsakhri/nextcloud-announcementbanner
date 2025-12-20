@@ -1,6 +1,29 @@
 (function() {
 	const APP_ID = 'announcementbanner';
 
+	function toIsoDateTime(value) {
+		if (!value) {
+			return '';
+		}
+		const date = new Date(value);
+		if (Number.isNaN(date.getTime())) {
+			return '';
+		}
+		return date.toISOString();
+	}
+
+	function toLocalInputValue(value) {
+		if (!value) {
+			return '';
+		}
+		const date = new Date(value);
+		if (Number.isNaN(date.getTime())) {
+			return '';
+		}
+		const pad = (num) => String(num).padStart(2, '0');
+		return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+	}
+
 	function serializeForm(form, { useCurrentMessage, fallbackMessage }) {
 		const formData = new FormData(form);
 		return {
@@ -10,6 +33,8 @@
 			variant: formData.get('variant') ?? 'info',
 			enabled: formData.get('enabled') !== null,
 			dismissible: formData.get('dismissible') !== null,
+			scheduleStart: toIsoDateTime(formData.get('scheduleStart') ?? ''),
+			scheduleEnd: toIsoDateTime(formData.get('scheduleEnd') ?? ''),
 			messageTranslations: collectTranslations('message'),
 			readMoreTextTranslations: collectTranslations('readMoreText'),
 		};
@@ -156,6 +181,8 @@
 		const messageInput = form.querySelector('#announcementbanner-message');
 		const readMoreTextInput = form.querySelector('#announcementbanner-readmore-text');
 		const readMoreUrlInput = form.querySelector('#announcementbanner-readmore-url');
+		const scheduleStartInput = form.querySelector('#announcementbanner-schedule-start');
+		const scheduleEndInput = form.querySelector('#announcementbanner-schedule-end');
 		const variantSelect = form.querySelector('#announcementbanner-variant');
 		const enabledInput = form.querySelector('#announcementbanner-enabled');
 		const dismissibleInput = form.querySelector('#announcementbanner-dismissible');
@@ -164,6 +191,8 @@
 		let lastSavedMessage = messageInput ? messageInput.value : '';
 		let lastSavedReadMoreText = readMoreTextInput ? readMoreTextInput.value : '';
 		let lastSavedReadMoreUrl = readMoreUrlInput ? readMoreUrlInput.value : '';
+		let lastSavedScheduleStart = scheduleStartInput ? toIsoDateTime(scheduleStartInput.value) : '';
+		let lastSavedScheduleEnd = scheduleEndInput ? toIsoDateTime(scheduleEndInput.value) : '';
 		let lastSavedVariant = variantSelect ? variantSelect.value : 'info';
 		let lastSavedEnabled = enabledInput ? enabledInput.checked : false;
 		let lastSavedDismissible = dismissibleInput ? dismissibleInput.checked : true;
@@ -338,6 +367,18 @@
 						readMoreUrlInput.value = data.readMoreUrl;
 					}
 				}
+				if (typeof data.scheduleStart === 'string') {
+					lastSavedScheduleStart = data.scheduleStart;
+					if (scheduleStartInput) {
+						scheduleStartInput.value = toLocalInputValue(data.scheduleStart);
+					}
+				}
+				if (typeof data.scheduleEnd === 'string') {
+					lastSavedScheduleEnd = data.scheduleEnd;
+					if (scheduleEndInput) {
+						scheduleEndInput.value = toLocalInputValue(data.scheduleEnd);
+					}
+				}
 				if (data.messageTranslations && typeof data.messageTranslations === 'object') {
 					lastSavedMessageTranslations = data.messageTranslations;
 				}
@@ -372,6 +413,8 @@
 					readMoreUrl: lastSavedReadMoreUrl,
 					variant: lastSavedVariant,
 					dismissible: lastSavedDismissible,
+					scheduleStart: lastSavedScheduleStart,
+					scheduleEnd: lastSavedScheduleEnd,
 				});
 			} catch (error) {
 				console.error(error);
@@ -440,6 +483,18 @@
 							readMoreUrlInput.value = data.readMoreUrl;
 						}
 					}
+					if (typeof data.scheduleStart === 'string') {
+						lastSavedScheduleStart = data.scheduleStart;
+						if (scheduleStartInput) {
+							scheduleStartInput.value = toLocalInputValue(data.scheduleStart);
+						}
+					}
+					if (typeof data.scheduleEnd === 'string') {
+						lastSavedScheduleEnd = data.scheduleEnd;
+						if (scheduleEndInput) {
+							scheduleEndInput.value = toLocalInputValue(data.scheduleEnd);
+						}
+					}
 					if (data.messageTranslations && typeof data.messageTranslations === 'object') {
 						lastSavedMessageTranslations = data.messageTranslations;
 					}
@@ -473,6 +528,8 @@
 						readMoreUrl: lastSavedReadMoreUrl,
 						variant: lastSavedVariant,
 						dismissible: lastSavedDismissible,
+						scheduleStart: lastSavedScheduleStart,
+						scheduleEnd: lastSavedScheduleEnd,
 					});
 				} else {
 					renderPreviewFromForm();

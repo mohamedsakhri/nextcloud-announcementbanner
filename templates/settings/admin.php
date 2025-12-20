@@ -150,6 +150,36 @@ $settings = $_['settings'];
 			</div>
 
 			<div class="announcementbanner-field">
+				<label class="announcementbanner-field__label" for="announcementbanner-schedule-start">
+					<?php p($_['labels']['scheduleStart']); ?>
+				</label>
+				<div class="announcementbanner-field__control">
+					<input
+						type="datetime-local"
+						id="announcementbanner-schedule-start"
+						name="scheduleStart"
+						class="announcementbanner-input"
+						value="<?php p($settings['scheduleStart']); ?>"
+					/>
+				</div>
+			</div>
+
+			<div class="announcementbanner-field">
+				<label class="announcementbanner-field__label" for="announcementbanner-schedule-end">
+					<?php p($_['labels']['scheduleEnd']); ?>
+				</label>
+				<div class="announcementbanner-field__control">
+					<input
+						type="datetime-local"
+						id="announcementbanner-schedule-end"
+						name="scheduleEnd"
+						class="announcementbanner-input"
+						value="<?php p($settings['scheduleEnd']); ?>"
+					/>
+				</div>
+			</div>
+
+			<div class="announcementbanner-field">
 				<label class="announcementbanner-field__label" for="announcementbanner-variant">
 					<?php p($_['labels']['variant']); ?>
 				</label>

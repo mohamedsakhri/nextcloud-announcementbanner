@@ -18,6 +18,8 @@
         "Optional link label, e.g. “Read more”": "Libellé facultatif, ex. « Lire la suite »",
         "Read more link": "Lien Lire la suite",
         "Add a link for more details": "Ajouter un lien pour plus de détails",
+        "Schedule start (optional)": "Début de la planification (optionnel)",
+        "Schedule end (optional)": "Fin de la planification (optionnel)",
         "Translations": "Traductions",
         "Add translation": "Ajouter une traduction",
         "Language code (e.g. en, de, fr)": "Code de langue (p. ex. en, de, fr)",

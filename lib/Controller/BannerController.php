@@ -46,6 +46,8 @@ class BannerController extends Controller {
         $readMoreText = (string)($payload['readMoreText'] ?? '');
         $readMoreTextTranslations = $this->normalizeTranslations($payload['readMoreTextTranslations'] ?? []);
         $readMoreUrl = (string)($payload['readMoreUrl'] ?? '');
+        $scheduleStart = (string)($payload['scheduleStart'] ?? '');
+        $scheduleEnd = (string)($payload['scheduleEnd'] ?? '');
 
         try {
             $payload = $this->configService->saveBannerSettings(
@@ -53,11 +55,13 @@ class BannerController extends Controller {
                 $message,
                 $messageTranslations,
                 $variant,
-                $dismissible,
-                $readMoreText,
-                $readMoreTextTranslations,
-                $readMoreUrl,
-            );
+            $dismissible,
+            $readMoreText,
+            $readMoreTextTranslations,
+            $readMoreUrl,
+            $scheduleStart,
+            $scheduleEnd,
+        );
         } catch (InvalidArgumentException $e) {
             return new DataResponse(
                 ['message' => $e->getMessage()],

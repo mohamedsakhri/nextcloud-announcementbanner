@@ -18,6 +18,8 @@
         "Optional link label, e.g. “Read more”": "Optional link label, e.g. “Read more”",
         "Read more link": "Read more link",
         "Add a link for more details": "Add a link for more details",
+        "Schedule start (optional)": "Schedule start (optional)",
+        "Schedule end (optional)": "Schedule end (optional)",
         "Translations": "Translations",
         "Add translation": "Add translation",
         "Language code (e.g. en, de, fr)": "Language code (e.g. en, de, fr)",

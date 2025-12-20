@@ -19,6 +19,8 @@ OC.L10N.register(
     "Optional link label, e.g. “Read more”" : "Etiqueta de enlace opcional, p. ej., \"Leer más\"",
     "Read more link" : "Enlace de leer más",
     "Add a link for more details" : "Añade un enlace para más detalles",
+    "Schedule start (optional)" : "Inicio de programación (opcional)",
+    "Schedule end (optional)" : "Fin de programación (opcional)",
     "Translations" : "Traducciones",
     "Add translation" : "Añadir traducción",
     "Language code (e.g. en, de, fr)" : "Código de idioma (p. ej., en, de, fr)",
