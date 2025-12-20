@@ -67,6 +67,7 @@ class Admin implements ISettings {
                     'tr' => 'Türkçe',
                     'ar' => 'العربية',
                     'hi' => 'हिन्दी',
+                    'sv' => 'Svenska',
                     'ja' => '日本語',
                     'ko' => '한국어',
                     'zh-cn' => '中文 (简体)',
