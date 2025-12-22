@@ -1,0 +1,33 @@
+OC.L10N.register(
+    "announcementbanner",
+    {
+        "Announcement banner" : "Meddelandebanner",
+        "The Announcement Banner app displays a customizable notification bar on every Nextcloud page, with your own message, a visual theme to highlight the type of announcement, and an optional link for more details. You can add translations so users see the banner in their language; otherwise the default message is shown. It offers a real-time preview of the banner, and your changes are shown to all users once they are saved." : "Appen Meddelandebanner visar en anpassningsbar notifieringsrad högst upp på varje sida i Nextcloud, med ditt eget meddelande, ett visuellt tema som markerar typen av information samt en valfri länk för mer detaljer. Du kan lägga till översättningar så att användare ser bannern på sitt språk, annars visas standardmeddelandet. En förhandsgranskning visas i realtid och ändringarna blir synliga för alla användare när de sparas.",
+        "Show an announcement banner at the top of every page" : "Visa en meddelandebanner högst upp på varje sida",
+        "Banner message" : "Meddelande",
+        "What do you need everyone to know?" : "Vad behöver alla veta?",
+        "Color scheme" : "Färgschema",
+        "Danger" : "Allvarligt",
+        "Success" : "Lyckat",
+        "Warning" : "Varning",
+        "Info" : "Information",
+        "Enable banner" : "Aktivera banner",
+        "Show dismiss icon (users can hide the banner)" : "Visa stäng-ikon (användare kan dölja bannern)",
+        "Banner disabled" : "Banner inaktiverad",
+        "Live preview" : "Direkt förhandsgranskning",
+        "Read more label" : "Etikett för Läs mer",
+        "Optional link label, e.g. “Read more”" : "Valfri länketikett, t.ex. ”Läs mer”",
+        "Read more link" : "Länk för Läs mer",
+        "Add a link for more details" : "Lägg till en länk för mer information",
+        "Translations" : "Översättningar",
+        "Add translation" : "Lägg till översättning",
+        "Language code (e.g. en, de, fr)" : "Språkkod (t.ex. en, de, fr)",
+        "Translation text" : "Översatt text",
+        "Remove" : "Ta bort",
+        "Save banner" : "Spara banner",
+        "Banner settings saved" : "Bannerinställningar sparade",
+        "Unable to save banner settings" : "Kunde inte spara bannerinställningar",
+        "Dismiss banner" : "Stäng banner"
+    },
+    "nplurals=2; plural=(n != 1);"
+);
