@@ -9,6 +9,9 @@ use OCA\AnnouncementBanner\AppInfo\Application;
 use OCP\IConfig;
 
 class ConfigService {
+    private const KEY_BANNERS = 'banners';
+    private const KEY_BANNERS_MIGRATED = 'banners_migrated';
+
     private const KEY_ENABLED = 'banner_enabled';
     private const KEY_MESSAGE = 'message';
     private const KEY_MESSAGE_TRANSLATIONS = 'message_translations';
@@ -17,6 +20,8 @@ class ConfigService {
     private const KEY_READ_MORE_TEXT = 'read_more_text';
     private const KEY_READ_MORE_TEXT_TRANSLATIONS = 'read_more_text_translations';
     private const KEY_READ_MORE_URL = 'read_more_url';
+    private const KEY_SCHEDULE_START = 'schedule_start';
+    private const KEY_SCHEDULE_END = 'schedule_end';
 
     /**
      * @var string[]
@@ -28,32 +33,51 @@ class ConfigService {
     ) {
     }
 
-    public function isEnabled(): bool {
-        return $this->getEnabledFlag();
+    public function hasEnabledBanners(): bool {
+        foreach ($this->getBanners() as $banner) {
+            if (!empty($banner['enabled'])) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
-     * @return array{enabled: bool, message: string, messageTranslations: array<string, string>, variant: string, dismissible: bool, readMoreText: string, readMoreTextTranslations: array<string, string>, readMoreUrl: string}
+     * @return array<int, array<string, mixed>>
      */
-    public function getBannerSettings(): array {
-        return [
-            'enabled' => $this->getEnabledFlag(),
-            'message' => $this->getAppValue(self::KEY_MESSAGE, ''),
-            'messageTranslations' => $this->getTranslations(self::KEY_MESSAGE_TRANSLATIONS),
-            'variant' => $this->normalizeVariant(
-                $this->getAppValue(self::KEY_VARIANT, 'info')
-            ),
-            'dismissible' => $this->getAppValue(self::KEY_DISMISSIBLE, '1') === '1',
-            'readMoreText' => $this->getAppValue(self::KEY_READ_MORE_TEXT, ''),
-            'readMoreTextTranslations' => $this->getTranslations(self::KEY_READ_MORE_TEXT_TRANSLATIONS),
-            'readMoreUrl' => $this->getAppValue(self::KEY_READ_MORE_URL, ''),
-        ];
+    public function getBanners(): array {
+        $this->ensureLegacyMigration();
+        return $this->loadBanners();
     }
 
     /**
-     * @return array{enabled: bool, message: string, messageTranslations: array<string, string>, variant: string, dismissible: bool, readMoreText: string, readMoreTextTranslations: array<string, string>, readMoreUrl: string}
+     * @return array<int, array<string, mixed>>
      */
-    public function saveBannerSettings(
+    public function getBannersForAdmin(): array {
+        $banners = $this->getBanners();
+        $withStatus = [];
+        foreach ($banners as $banner) {
+            $withStatus[] = $this->withStatus($banner);
+        }
+
+        return $withStatus;
+    }
+
+    public function getBanner(string $id): ?array {
+        foreach ($this->getBanners() as $banner) {
+            if (($banner['id'] ?? '') === $id) {
+                return $banner;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function createBanner(
         bool $enabled,
         string $message,
         array $messageTranslations,
@@ -62,6 +86,216 @@ class ConfigService {
         string $readMoreText,
         array $readMoreTextTranslations,
         string $readMoreUrl,
+        string $scheduleStart,
+        string $scheduleEnd,
+    ): array {
+        $banners = $this->getBanners();
+        $now = $this->getNow();
+        $banner = $this->buildBanner(
+            [
+                'id' => $this->generateId(),
+                'createdAt' => $now,
+            ],
+            $enabled,
+            $message,
+            $messageTranslations,
+            $variant,
+            $dismissible,
+            $readMoreText,
+            $readMoreTextTranslations,
+            $readMoreUrl,
+            $scheduleStart,
+            $scheduleEnd,
+            $now,
+        );
+        $banners[] = $banner;
+        $this->saveBanners($banners);
+
+        return $this->withStatus($banner);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function updateBanner(
+        string $id,
+        bool $enabled,
+        string $message,
+        array $messageTranslations,
+        string $variant,
+        bool $dismissible,
+        string $readMoreText,
+        array $readMoreTextTranslations,
+        string $readMoreUrl,
+        string $scheduleStart,
+        string $scheduleEnd,
+    ): array {
+        $banners = $this->getBanners();
+        $updated = null;
+        $now = $this->getNow();
+
+        foreach ($banners as $index => $banner) {
+            if (($banner['id'] ?? '') !== $id) {
+                continue;
+            }
+
+            $updated = $this->buildBanner(
+                $banner,
+                $enabled,
+                $message,
+                $messageTranslations,
+                $variant,
+                $dismissible,
+                $readMoreText,
+                $readMoreTextTranslations,
+                $readMoreUrl,
+                $scheduleStart,
+                $scheduleEnd,
+                $now,
+            );
+            $banners[$index] = $updated;
+            break;
+        }
+
+        if ($updated === null) {
+            throw new InvalidArgumentException('Banner not found.');
+        }
+
+        $this->saveBanners($banners);
+
+        return $this->withStatus($updated);
+    }
+
+    public function deleteBanner(string $id): void {
+        $banners = $this->getBanners();
+        $remaining = [];
+        $deleted = false;
+
+        foreach ($banners as $banner) {
+            if (($banner['id'] ?? '') === $id) {
+                $deleted = true;
+                continue;
+            }
+            $remaining[] = $banner;
+        }
+
+        if (!$deleted) {
+            throw new InvalidArgumentException('Banner not found.');
+        }
+
+        $this->saveBanners($remaining);
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function getPublicBanners(): array {
+        $banners = [];
+        foreach ($this->getBanners() as $banner) {
+            if (empty($banner['enabled']) || empty($banner['message'])) {
+                continue;
+            }
+
+            $banner['dismissKey'] = $this->getDismissKey($banner);
+            $banners[] = $banner;
+        }
+
+        return $banners;
+    }
+
+    public function getDismissKey(?array $banner = null): string {
+        $banner = $banner ?? [];
+
+        $id = (string)($banner['id'] ?? '');
+        $message = $banner['message'] ?? '';
+        $messageTranslations = $banner['messageTranslations'] ?? [];
+        $variant = $banner['variant'] ?? 'info';
+        $readMoreText = $banner['readMoreText'] ?? '';
+        $readMoreTextTranslations = $banner['readMoreTextTranslations'] ?? [];
+        $readMoreUrl = $banner['readMoreUrl'] ?? '';
+        $scheduleStart = $banner['scheduleStart'] ?? '';
+        $scheduleEnd = $banner['scheduleEnd'] ?? '';
+        $enabled = $banner['enabled'] ?? false;
+        $dismissible = $banner['dismissible'] ?? false;
+
+        return md5(implode('|', [
+            $id,
+            $message,
+            $this->encodeTranslations($messageTranslations),
+            $variant,
+            $readMoreText,
+            $this->encodeTranslations($readMoreTextTranslations),
+            $readMoreUrl,
+            $scheduleStart,
+            $scheduleEnd,
+            $enabled ? '1' : '0',
+            $dismissible ? '1' : '0',
+        ]));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getDefaultBanner(): array {
+        return [
+            'id' => '',
+            'enabled' => false,
+            'message' => '',
+            'messageTranslations' => [],
+            'variant' => 'info',
+            'dismissible' => true,
+            'readMoreText' => '',
+            'readMoreTextTranslations' => [],
+            'readMoreUrl' => '',
+            'scheduleStart' => '',
+            'scheduleEnd' => '',
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function withStatus(array $banner): array {
+        $banner['status'] = $this->getBannerStatus($banner);
+        return $banner;
+    }
+
+    private function getBannerStatus(array $banner): string {
+        if (empty($banner['enabled'])) {
+            return 'disabled';
+        }
+
+        $now = new \DateTimeImmutable('now');
+        $start = $this->parseStoredSchedule($banner['scheduleStart'] ?? '');
+        $end = $this->parseStoredSchedule($banner['scheduleEnd'] ?? '');
+
+        if ($start && $now < $start) {
+            return 'scheduled';
+        }
+
+        if ($end && $now > $end) {
+            return 'expired';
+        }
+
+        return 'active';
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function buildBanner(
+        array $seed,
+        bool $enabled,
+        string $message,
+        array $messageTranslations,
+        string $variant,
+        bool $dismissible,
+        string $readMoreText,
+        array $readMoreTextTranslations,
+        string $readMoreUrl,
+        string $scheduleStart,
+        string $scheduleEnd,
+        string $updatedAt,
     ): array {
         $message = trim($message);
         $messageTranslations = $this->normalizeTranslations($messageTranslations);
@@ -69,48 +303,139 @@ class ConfigService {
         $readMoreText = trim($readMoreText);
         $readMoreTextTranslations = $this->normalizeTranslations($readMoreTextTranslations);
         $readMoreUrl = trim($readMoreUrl);
+        $scheduleStart = $this->normalizeScheduleValue($scheduleStart);
+        $scheduleEnd = $this->normalizeScheduleValue($scheduleEnd);
+
+        if ($scheduleStart !== '' && $scheduleEnd !== '') {
+            $startTime = new \DateTimeImmutable($scheduleStart);
+            $endTime = new \DateTimeImmutable($scheduleEnd);
+            if ($startTime > $endTime) {
+                throw new InvalidArgumentException('Schedule end must be after schedule start.');
+            }
+        }
 
         if ($enabled && $message === '') {
             throw new InvalidArgumentException('Message is required when the banner is enabled.');
         }
 
-        $this->setAppValue(self::KEY_ENABLED, $enabled ? '1' : '0');
-        $this->setAppValue(self::KEY_MESSAGE, $message);
-        $this->setAppValue(self::KEY_MESSAGE_TRANSLATIONS, json_encode($messageTranslations) ?: '');
-        $this->setAppValue(self::KEY_VARIANT, $variant);
-        $this->setAppValue(self::KEY_DISMISSIBLE, $dismissible ? '1' : '0');
-        $this->setAppValue(self::KEY_READ_MORE_TEXT, $readMoreText);
-        $this->setAppValue(self::KEY_READ_MORE_TEXT_TRANSLATIONS, json_encode($readMoreTextTranslations) ?: '');
-        $this->setAppValue(self::KEY_READ_MORE_URL, $readMoreUrl);
-
-        return $this->getBannerSettings();
+        return [
+            'id' => (string)($seed['id'] ?? $this->generateId()),
+            'enabled' => $enabled,
+            'message' => $message,
+            'messageTranslations' => $messageTranslations,
+            'variant' => $variant,
+            'dismissible' => $dismissible,
+            'readMoreText' => $readMoreText,
+            'readMoreTextTranslations' => $readMoreTextTranslations,
+            'readMoreUrl' => $readMoreUrl,
+            'scheduleStart' => $scheduleStart,
+            'scheduleEnd' => $scheduleEnd,
+            'createdAt' => (string)($seed['createdAt'] ?? $updatedAt),
+            'updatedAt' => $updatedAt,
+        ];
     }
 
     /**
-     * Generate a cache/dismiss key tied to the active banner content.
+     * @return array<int, array<string, mixed>>
      */
-    public function getDismissKey(?array $settings = null): string {
-        $settings = $settings ?? $this->getBannerSettings();
+    private function loadBanners(): array {
+        $raw = $this->getAppValue(self::KEY_BANNERS, '');
+        if ($raw === '') {
+            return [];
+        }
 
-        $message = $settings['message'] ?? '';
-        $messageTranslations = $settings['messageTranslations'] ?? [];
-        $variant = $settings['variant'] ?? 'info';
-        $readMoreText = $settings['readMoreText'] ?? '';
-        $readMoreTextTranslations = $settings['readMoreTextTranslations'] ?? [];
-        $readMoreUrl = $settings['readMoreUrl'] ?? '';
-        $enabled = $settings['enabled'] ?? false;
-        $dismissible = $settings['dismissible'] ?? false;
+        $decoded = json_decode($raw, true);
+        if (!is_array($decoded)) {
+            return [];
+        }
 
-        return md5(implode('|', [
-            $message,
-            $this->encodeTranslations($messageTranslations),
-            $variant,
-            $readMoreText,
-            $this->encodeTranslations($readMoreTextTranslations),
-            $readMoreUrl,
-            $enabled ? '1' : '0',
-            $dismissible ? '1' : '0',
-        ]));
+        $banners = [];
+        foreach ($decoded as $entry) {
+            if (!is_array($entry)) {
+                continue;
+            }
+            $banners[] = $this->normalizeStoredBanner($entry);
+        }
+
+        return $banners;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $banners
+     */
+    private function saveBanners(array $banners): void {
+        $encoded = json_encode($banners);
+        $this->setAppValue(self::KEY_BANNERS, $encoded ?: '[]');
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function normalizeStoredBanner(array $banner): array {
+        $messageTranslations = $banner['messageTranslations'] ?? [];
+        $readMoreTextTranslations = $banner['readMoreTextTranslations'] ?? [];
+
+        return [
+            'id' => (string)($banner['id'] ?? $this->generateId()),
+            'enabled' => (bool)($banner['enabled'] ?? false),
+            'message' => trim((string)($banner['message'] ?? '')),
+            'messageTranslations' => $this->normalizeTranslations(is_array($messageTranslations) ? $messageTranslations : []),
+            'variant' => $this->normalizeVariant((string)($banner['variant'] ?? 'info')),
+            'dismissible' => (bool)($banner['dismissible'] ?? true),
+            'readMoreText' => trim((string)($banner['readMoreText'] ?? '')),
+            'readMoreTextTranslations' => $this->normalizeTranslations(is_array($readMoreTextTranslations) ? $readMoreTextTranslations : []),
+            'readMoreUrl' => trim((string)($banner['readMoreUrl'] ?? '')),
+            'scheduleStart' => $this->normalizeStoredScheduleValue((string)($banner['scheduleStart'] ?? '')),
+            'scheduleEnd' => $this->normalizeStoredScheduleValue((string)($banner['scheduleEnd'] ?? '')),
+            'createdAt' => (string)($banner['createdAt'] ?? $this->getNow()),
+            'updatedAt' => (string)($banner['updatedAt'] ?? $this->getNow()),
+        ];
+    }
+
+    private function ensureLegacyMigration(): void {
+        if ($this->getAppValue(self::KEY_BANNERS_MIGRATED, '0') === '1') {
+            return;
+        }
+
+        if ($this->getAppValue(self::KEY_BANNERS, '') !== '') {
+            $this->setAppValue(self::KEY_BANNERS_MIGRATED, '1');
+            return;
+        }
+
+        $legacyEnabled = $this->getAppValue(self::KEY_ENABLED, '0') === '1';
+        $legacyMessage = $this->getAppValue(self::KEY_MESSAGE, '');
+        $legacyReadMoreText = $this->getAppValue(self::KEY_READ_MORE_TEXT, '');
+        $legacyReadMoreUrl = $this->getAppValue(self::KEY_READ_MORE_URL, '');
+        $legacyScheduleStart = $this->getAppValue(self::KEY_SCHEDULE_START, '');
+        $legacyScheduleEnd = $this->getAppValue(self::KEY_SCHEDULE_END, '');
+        $hasLegacyData = $legacyEnabled || $legacyMessage !== '' || $legacyReadMoreText !== '' || $legacyReadMoreUrl !== '' || $legacyScheduleStart !== '' || $legacyScheduleEnd !== '';
+
+        if (!$hasLegacyData) {
+            $this->setAppValue(self::KEY_BANNERS_MIGRATED, '1');
+            return;
+        }
+
+        $now = $this->getNow();
+        $banner = $this->buildBanner(
+            [
+                'id' => $this->generateId(),
+                'createdAt' => $now,
+            ],
+            $legacyEnabled,
+            $legacyMessage,
+            $this->getTranslations(self::KEY_MESSAGE_TRANSLATIONS),
+            $this->getAppValue(self::KEY_VARIANT, 'info'),
+            $this->getAppValue(self::KEY_DISMISSIBLE, '1') === '1',
+            $legacyReadMoreText,
+            $this->getTranslations(self::KEY_READ_MORE_TEXT_TRANSLATIONS),
+            $legacyReadMoreUrl,
+            $legacyScheduleStart,
+            $legacyScheduleEnd,
+            $now,
+        );
+
+        $this->saveBanners([$banner]);
+        $this->setAppValue(self::KEY_BANNERS_MIGRATED, '1');
     }
 
     private function normalizeVariant(string $variant): string {
@@ -172,6 +497,21 @@ class ConfigService {
         return $normalized;
     }
 
+    private function normalizeScheduleValue(string $value): string {
+        $value = trim($value);
+        if ($value === '') {
+            return '';
+        }
+
+        try {
+            $date = new \DateTimeImmutable($value);
+        } catch (\Exception $e) {
+            throw new InvalidArgumentException('Schedule value must be a valid date/time.');
+        }
+
+        return $date->format(\DateTimeInterface::ATOM);
+    }
+
     /**
      * @param array<string, mixed> $translations
      */
@@ -183,15 +523,39 @@ class ConfigService {
         return json_encode($this->normalizeTranslations($translations)) ?: '';
     }
 
-    private function getEnabledFlag(): bool {
-        return $this->getAppValue(self::KEY_ENABLED, '0') === '1';
-    }
-
     private function getAppValue(string $key, string $default = ''): string {
         return $this->config->getAppValue(Application::APP_ID, $key, $default);
     }
 
     private function setAppValue(string $key, string $value): void {
         $this->config->setAppValue(Application::APP_ID, $key, $value);
+    }
+
+    private function generateId(): string {
+        return bin2hex(random_bytes(16));
+    }
+
+    private function getNow(): string {
+        return (new \DateTimeImmutable('now'))->format(\DateTimeInterface::ATOM);
+    }
+
+    private function normalizeStoredScheduleValue(string $value): string {
+        try {
+            return $this->normalizeScheduleValue($value);
+        } catch (InvalidArgumentException $e) {
+            return '';
+        }
+    }
+
+    private function parseStoredSchedule(string $value): ?\DateTimeImmutable {
+        if ($value === '') {
+            return null;
+        }
+
+        try {
+            return new \DateTimeImmutable($value);
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 }

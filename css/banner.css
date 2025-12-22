@@ -1,6 +1,14 @@
+.announcementbanner-stack {
+	position: relative;
+	margin-top: var(--announcementbanner-offset, 56px);
+	margin-bottom: 8px;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
 .announcementbanner {
 	position: relative;
-	top: var(--announcementbanner-offset, 56px);
 	left: 0;
 	right: 0;
 	z-index: 1200;
@@ -12,7 +20,7 @@
 	border-radius: 10px;
 	border: 1px solid transparent;
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-	margin-bottom: 1rem;
+	margin: 0;
 	color: var(--color-text, #fff);
 }
 

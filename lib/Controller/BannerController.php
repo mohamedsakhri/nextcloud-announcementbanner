@@ -27,36 +27,46 @@ class BannerController extends Controller {
     #[NoAdminRequired]
     #[NoCSRFRequired]
     public function getBanner(): DataResponse {
-        $settings = $this->configService->getBannerSettings();
-        $settings['dismissKey'] = $this->configService->getDismissKey($settings);
+        return new DataResponse([
+            'banners' => $this->configService->getPublicBanners(),
+        ]);
+    }
 
-        return new DataResponse($settings);
+    #[AdminRequired]
+    #[NoCSRFRequired]
+    public function listBanners(): DataResponse {
+        return new DataResponse($this->configService->getBannersForAdmin());
+    }
+
+    #[AdminRequired]
+    #[NoCSRFRequired]
+    public function getBannerDetails(string $id): DataResponse {
+        $banner = $this->configService->getBanner($id);
+        if ($banner === null) {
+            return new DataResponse(['message' => 'Banner not found.'], Http::STATUS_NOT_FOUND);
+        }
+
+        return new DataResponse($banner);
     }
 
     #[AdminRequired]
     #[CSRFRequired]
-    public function saveBanner(): DataResponse {
+    public function createBanner(): DataResponse {
         $payload = $this->readInput();
-
-        $enabled = filter_var($payload['enabled'] ?? false, FILTER_VALIDATE_BOOLEAN);
-        $dismissible = filter_var($payload['dismissible'] ?? false, FILTER_VALIDATE_BOOLEAN);
-        $message = (string)($payload['message'] ?? '');
-        $messageTranslations = $this->normalizeTranslations($payload['messageTranslations'] ?? []);
-        $variant = (string)($payload['variant'] ?? 'info');
-        $readMoreText = (string)($payload['readMoreText'] ?? '');
-        $readMoreTextTranslations = $this->normalizeTranslations($payload['readMoreTextTranslations'] ?? []);
-        $readMoreUrl = (string)($payload['readMoreUrl'] ?? '');
+        $data = $this->extractBannerPayload($payload);
 
         try {
-            $payload = $this->configService->saveBannerSettings(
-                $enabled,
-                $message,
-                $messageTranslations,
-                $variant,
-                $dismissible,
-                $readMoreText,
-                $readMoreTextTranslations,
-                $readMoreUrl,
+            $banner = $this->configService->createBanner(
+                $data['enabled'],
+                $data['message'],
+                $data['messageTranslations'],
+                $data['variant'],
+                $data['dismissible'],
+                $data['readMoreText'],
+                $data['readMoreTextTranslations'],
+                $data['readMoreUrl'],
+                $data['scheduleStart'],
+                $data['scheduleEnd'],
             );
         } catch (InvalidArgumentException $e) {
             return new DataResponse(
@@ -65,7 +75,53 @@ class BannerController extends Controller {
             );
         }
 
-        return new DataResponse($payload);
+        return new DataResponse($banner);
+    }
+
+    #[AdminRequired]
+    #[CSRFRequired]
+    public function updateBanner(string $id): DataResponse {
+        $payload = $this->readInput();
+        $data = $this->extractBannerPayload($payload);
+
+        try {
+            $banner = $this->configService->updateBanner(
+                $id,
+                $data['enabled'],
+                $data['message'],
+                $data['messageTranslations'],
+                $data['variant'],
+                $data['dismissible'],
+                $data['readMoreText'],
+                $data['readMoreTextTranslations'],
+                $data['readMoreUrl'],
+                $data['scheduleStart'],
+                $data['scheduleEnd'],
+            );
+        } catch (InvalidArgumentException $e) {
+            $code = $e->getMessage() === 'Banner not found.' ? Http::STATUS_NOT_FOUND : Http::STATUS_BAD_REQUEST;
+            return new DataResponse(
+                ['message' => $e->getMessage()],
+                $code
+            );
+        }
+
+        return new DataResponse($banner);
+    }
+
+    #[AdminRequired]
+    #[CSRFRequired]
+    public function deleteBanner(string $id): DataResponse {
+        try {
+            $this->configService->deleteBanner($id);
+        } catch (InvalidArgumentException $e) {
+            return new DataResponse(
+                ['message' => $e->getMessage()],
+                Http::STATUS_NOT_FOUND
+            );
+        }
+
+        return new DataResponse(['id' => $id]);
     }
 
     /**
@@ -86,6 +142,24 @@ class BannerController extends Controller {
         }
 
         return $params;
+    }
+
+    /**
+     * @return array{enabled: bool, message: string, messageTranslations: array<string, string>, variant: string, dismissible: bool, readMoreText: string, readMoreTextTranslations: array<string, string>, readMoreUrl: string, scheduleStart: string, scheduleEnd: string}
+     */
+    private function extractBannerPayload(array $payload): array {
+        return [
+            'enabled' => filter_var($payload['enabled'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            'dismissible' => filter_var($payload['dismissible'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            'message' => (string)($payload['message'] ?? ''),
+            'messageTranslations' => $this->normalizeTranslations($payload['messageTranslations'] ?? []),
+            'variant' => (string)($payload['variant'] ?? 'info'),
+            'readMoreText' => (string)($payload['readMoreText'] ?? ''),
+            'readMoreTextTranslations' => $this->normalizeTranslations($payload['readMoreTextTranslations'] ?? []),
+            'readMoreUrl' => (string)($payload['readMoreUrl'] ?? ''),
+            'scheduleStart' => (string)($payload['scheduleStart'] ?? ''),
+            'scheduleEnd' => (string)($payload['scheduleEnd'] ?? ''),
+        ];
     }
 
     /**

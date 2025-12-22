@@ -1,6 +1,7 @@
 (function() {
 	const APP_ID = 'announcementbanner';
 	const DISMISS_PREFIX = APP_ID + ':dismissed:';
+	let bannerContainer = null;
 
 	function isAuthScreen() {
 		const body = document.body;
@@ -88,9 +89,37 @@
 		};
 	}
 
-	function buildBannerElement(data) {
+	function parseScheduleValue(value) {
+		if (!value) {
+			return null;
+		}
+		const time = Date.parse(value);
+		if (Number.isNaN(time)) {
+			return null;
+		}
+		return time;
+	}
+
+	function isScheduleActive(payload) {
+		const start = parseScheduleValue(payload.scheduleStart);
+		const end = parseScheduleValue(payload.scheduleEnd);
+		const now = Date.now();
+
+		if (start !== null && now < start) {
+			return false;
+		}
+
+		if (end !== null && now > end) {
+			return false;
+		}
+
+		return true;
+	}
+
+	function buildBannerElement(data, { showDismiss = true } = {}) {
 		const banner = document.createElement('div');
-		banner.className = 'announcementbanner announcementbanner--' + data.variant;
+		const variant = data.variant || 'info';
+		banner.className = 'announcementbanner announcementbanner--' + variant;
 		banner.setAttribute('role', 'status');
 		banner.setAttribute('aria-live', 'polite');
 
@@ -119,7 +148,7 @@
 		message.innerHTML = html;
 		banner.appendChild(message);
 
-		if (data.dismissible) {
+		if (data.dismissible && showDismiss) {
 			const closeButton = document.createElement('button');
 			closeButton.className = 'announcementbanner__close';
 			closeButton.setAttribute('type', 'button');
@@ -140,9 +169,7 @@
 			svg.appendChild(path2);
 			closeButton.appendChild(svg);
 			closeButton.addEventListener('click', () => {
-				banner.remove();
-				// Reset body height when banner is dismissed
-				adjustBodyHeight(0);
+				removeBannerElement(banner);
 				if (data.dismissKey) {
 					try {
 						window.localStorage.setItem(DISMISS_PREFIX + data.dismissKey, '1');
@@ -199,33 +226,73 @@
 		}
 	}
 
-	function insertBanner(banner) {
+	function updateBodyHeightFromContainer() {
+		if (!bannerContainer) {
+			adjustBodyHeight(0);
+			return;
+		}
+		const height = bannerContainer.getBoundingClientRect().height;
+		if (height > 0) {
+			adjustBodyHeight(Math.ceil(height));
+		} else {
+			adjustBodyHeight(0);
+		}
+	}
+
+	function removeBannerElement(banner) {
+		if (banner) {
+			banner.remove();
+		}
+
+		if (!bannerContainer) {
+			return;
+		}
+
+		if (bannerContainer.querySelector('.announcementbanner') === null) {
+			bannerContainer.remove();
+			bannerContainer = null;
+			adjustBodyHeight(0);
+			return;
+		}
+
+		updateBodyHeightFromContainer();
+	}
+
+	function insertBanners(banners) {
 		const body = document.body;
 		if (!body) {
 			return;
 		}
+
+		if (bannerContainer) {
+			bannerContainer.remove();
+			bannerContainer = null;
+			adjustBodyHeight(0);
+		}
+
+		bannerContainer = document.createElement('div');
+		bannerContainer.className = 'announcementbanner-stack';
 
 		// Offset to sit below the fixed header
 		const header = document.getElementById('header');
 		if (header) {
 			const headerHeight = Math.max(0, Math.ceil(header.getBoundingClientRect().height || 0));
 			if (headerHeight > 0) {
-				banner.style.setProperty('--announcementbanner-offset', `${headerHeight}px`);
+				bannerContainer.style.setProperty('--announcementbanner-offset', `${headerHeight}px`);
 			}
 		}
 
+		banners.forEach((banner) => bannerContainer.appendChild(banner));
+
 		if (body.firstChild) {
-			body.insertBefore(banner, body.firstChild);
+			body.insertBefore(bannerContainer, body.firstChild);
 		} else {
-			body.appendChild(banner);
+			body.appendChild(bannerContainer);
 		}
 
 		// Adjust body height after banner is inserted and rendered
 		setTimeout(() => {
-			const bannerHeight = banner.getBoundingClientRect().height;
-			if (bannerHeight > 0) {
-				adjustBodyHeight(Math.ceil(bannerHeight));
-			}
+			updateBodyHeightFromContainer();
 		}, 0);
 	}
 
@@ -257,21 +324,43 @@
 			return;
 		}
 
-		if (!payload || !payload.enabled || !payload.message) {
+		const payloadBanners = Array.isArray(payload?.banners)
+			? payload.banners
+			: Array.isArray(payload)
+				? payload
+				: payload && typeof payload === 'object'
+					? [payload]
+					: [];
+
+		const visibleBanners = [];
+
+		payloadBanners.forEach((banner) => {
+			if (!banner || !banner.enabled || !banner.message) {
+				return;
+			}
+
+			if (!isScheduleActive(banner)) {
+				return;
+			}
+
+			if (banner.dismissible && banner.dismissKey) {
+				try {
+					if (window.localStorage.getItem(DISMISS_PREFIX + banner.dismissKey) === '1') {
+						return;
+					}
+				} catch (error) {
+					console.warn('Unable to read banner dismissal state', error);
+				}
+			}
+
+			visibleBanners.push(buildBannerElement(applyTranslations(banner)));
+		});
+
+		if (visibleBanners.length === 0) {
 			return;
 		}
 
-		if (payload.dismissible && payload.dismissKey) {
-			try {
-				if (window.localStorage.getItem(DISMISS_PREFIX + payload.dismissKey) === '1') {
-					return;
-				}
-			} catch (error) {
-				console.warn('Unable to read banner dismissal state', error);
-			}
-		}
-
-		insertBanner(buildBannerElement(applyTranslations(payload)));
+		insertBanners(visibleBanners);
 	}
 
 	if (document.readyState === 'loading') {
