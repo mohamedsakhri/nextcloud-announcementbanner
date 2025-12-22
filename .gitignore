@@ -19,3 +19,4 @@ Thumbs.db
 # Ignore build folder
 build.sh
 /build/
+*.tar.gz
