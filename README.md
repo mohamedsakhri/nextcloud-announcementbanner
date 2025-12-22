@@ -1,8 +1,16 @@
 # Announcement Banner App
 
-The Announcement Banner App adds a customizable notification bar at the top of every Nextcloud page. You can configure the message, color scheme, optional “read more” link, and whether users can dismiss the banner. You can also add translations so users see the banner in their language. A live preview of your banner is shown in the admin settings.
+The Announcement Banner App adds customizable notification bars at the top of every Nextcloud page. Create multiple banners with their own message, color scheme, schedule window, optional “read more” link, and dismiss behavior. You can also add translations so users see the banner in their language. A live preview and an overview of all banners are available in the admin settings.
 
 ## Screenshots
+
+**Admin Overview**
+
+![Admin Overview](screenshots/banner-admin-overview.png)
+
+**Banner Settings**
+
+![Admin Settings](screenshots/banner-admin-settings.png)
 
 **Admin Preview**
 
@@ -24,32 +32,54 @@ The Announcement Banner App adds a customizable notification bar at the top of e
 
 ![Danger Banner](screenshots/banner-danger.png)
 
+**Custom Colors**
+
+![Admin Custom Colors](screenshots/banner-admin-custom.png)
+
 ## Features
 
-- Banner visible on all pages.
-- Color schemes: info, success, warning, danger.
-- Optional dismiss button.
+- Multiple banners with per-banner settings and lifecycle status.
+- Overview list with status (active, scheduled, expired, disabled), preview, schedule columns, and edit/delete actions.
+- Optional schedule: set a start time, an end time, or both to control when a banner is shown.
+- Theme variants: info, success, warning, danger, custom.
+- Optional dismiss button for users.
 - Optional “read more” link with customizable label and URL.
-- Optional translations for the banner message and read-more label (fallback to default).
+- Translations for banner message and read-more label (fallback to default).
 - Live preview in the admin settings; changes take effect for users after saving.
 - Multi-language support (English, German, French, Spanish, …).
+
+## Multiple Banners
+
+Create and manage several banners at once. Each banner can be enabled or disabled independently and has its own message, theme, schedule, and link settings.
+
+## Translations
+
+Add per-language overrides for the banner message and the read-more label. Users will see the translation matching their Nextcloud language, and the default text is used if no translation is provided.
+
+## Schedule
+
+Scheduling is optional. Set only a start date, only an end date, or both to control the time window in which a banner is visible.
+
+## Theme
+
+Choose between info, success, warning, and danger presets, or switch to the custom theme to define your own background and text colors.
 
 ## Requirements
 
 - Nextcloud >= 30
 
-## Installation (manual)
+## Installation
 
-1. Copy or extract this app to `nextcloud/apps/announcementbanner`.
-2. Enable it: `occ app:enable announcementbanner`.
-3. Configure in **Settings → Administration → Announcement banner**.
+Install from the Nextcloud App Store: [Announcement Banner](https://apps.nextcloud.com/apps/announcementbanner).
 
 ## Configuration
 
+- **Add new banner** to create a new message; manage all banners from the overview.
 - **Banner message**: Text to display.
-- **Color scheme**: Info, Success, Warning, Danger.
+- **Color scheme**: Info, Success, Warning, Danger, Custom (custom background/text colors).
 - **Enable banner** toggle.
 - **Dismiss icon** toggle (allow users to hide the banner).
 - **Read more**: Optional label + URL (shown inline with an arrow icon).
+- **Schedule**: Optional start date, end date, or both. Make sure to enable the banner if you want to schedule it.
 - **Translations**: Optional per-language overrides for message and read-more label; default text is the fallback.
 - Live preview updates immediately; saving publishes to all users.

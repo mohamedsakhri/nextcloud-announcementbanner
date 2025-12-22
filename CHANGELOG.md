@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2.0.0
+
+- Introduce multi-banner management with an overview list, status labels, and edit/delete actions.
+- Add per-banner scheduling with optional start/end times.
+- Add a custom theme option with configurable background and text colors.
+- Refresh admin UI with live previews and improved overview layout.
+- Expand translation coverage across all bundled languages.
+
 ## 1.1.1
 
 - Add support for swedish language

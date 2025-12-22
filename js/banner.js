@@ -46,17 +46,21 @@
 		const htmlLanguage = document.documentElement ? document.documentElement.lang : '';
 		const browserLanguage = (navigator && navigator.language) ? navigator.language : '';
 
-		[ocLanguage, htmlLanguage, browserLanguage].forEach((value) => {
-			const normalized = normalizeLocale(value);
-			if (!normalized) {
-				return;
-			}
-			candidates.push(normalized);
-			const base = normalized.split('-')[0];
-			if (base && base !== normalized) {
-				candidates.push(base);
-			}
-		});
+		let primary = ocLanguage || htmlLanguage;
+		if (!primary) {
+			primary = browserLanguage;
+		}
+
+		const normalized = normalizeLocale(primary);
+		if (!normalized) {
+			return [];
+		}
+
+		candidates.push(normalized);
+		const base = normalized.split('-')[0];
+		if (base && base !== normalized) {
+			candidates.push(base);
+		}
 
 		return Array.from(new Set(candidates));
 	}
