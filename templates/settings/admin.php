@@ -15,6 +15,12 @@ $settings = $_['settings'];
 				<?php p($_['labels']['addBanner']); ?>
 			</button>
 		</div>
+		<p class="announcementbanner-overview__description settings-hint">
+			<?php p($_['helpText']); ?>
+		</p>
+		<p class="announcementbanner-overview__description settings-hint">
+			<?php p($_['labels']['overviewNote']); ?>
+		</p>
 		<div class="announcementbanner-overview__table">
 			<div class="announcementbanner-overview__row announcementbanner-overview__row--header">
 				<div><?php p($_['labels']['status']); ?></div>
@@ -33,6 +39,7 @@ $settings = $_['settings'];
 	<div class="announcementbanner-detail is-hidden" data-announcementbanner-detail>
 		<div class="announcementbanner-detail__header">
 			<button type="button" class="btn btn-link" id="announcementbanner-back">
+				<img class="announcementbanner-back-icon" src="<?php print_unescaped(image_path('core', 'actions/arrow-left.svg')); ?>" alt="">
 				<?php p($_['labels']['backToOverview']); ?>
 			</button>
 			<h3 id="announcementbanner-detail-title"><?php p($_['labels']['newBanner']); ?></h3>
@@ -232,7 +239,34 @@ $settings = $_['settings'];
 							<option value="danger" <?php if ($settings['variant'] === 'danger') { print_unescaped('selected'); } ?>>
 								<?php p($_['labels']['variantRed']); ?>
 							</option>
+							<option value="custom" <?php if ($settings['variant'] === 'custom') { print_unescaped('selected'); } ?>>
+								<?php p($_['labels']['variantCustom']); ?>
+							</option>
 						</select>
+						<div class="announcementbanner-custom-colors" data-announcementbanner-custom <?php if ($settings['variant'] !== 'custom') { print_unescaped('hidden'); } ?>>
+							<div class="announcementbanner-custom-color">
+								<label for="announcementbanner-custom-background"><?php p($_['labels']['customBackground']); ?></label>
+								<input
+									type="color"
+									id="announcementbanner-custom-background"
+									name="customBackground"
+									class="announcementbanner-color-input"
+									value="<?php p($settings['customBackground'] ?: '#2980b9'); ?>"
+									style="--announcementbanner-color: <?php p($settings['customBackground'] ?: '#2980b9'); ?>;"
+								/>
+							</div>
+							<div class="announcementbanner-custom-color">
+								<label for="announcementbanner-custom-text"><?php p($_['labels']['customText']); ?></label>
+								<input
+									type="color"
+									id="announcementbanner-custom-text"
+									name="customText"
+									class="announcementbanner-color-input"
+									value="<?php p($settings['customText'] ?: '#ffffff'); ?>"
+									style="--announcementbanner-color: <?php p($settings['customText'] ?: '#ffffff'); ?>;"
+								/>
+							</div>
+						</div>
 					</div>
 				</div>
 

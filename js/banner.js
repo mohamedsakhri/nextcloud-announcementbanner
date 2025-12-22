@@ -122,6 +122,7 @@
 		banner.className = 'announcementbanner announcementbanner--' + variant;
 		banner.setAttribute('role', 'status');
 		banner.setAttribute('aria-live', 'polite');
+		applyCustomColors(banner, data);
 
 				const icon = document.createElement('span');
 				icon.className = 'announcementbanner__icon';
@@ -182,6 +183,24 @@
 		}
 
 		return banner;
+	}
+
+	function applyCustomColors(banner, data) {
+		if (!banner) {
+			return;
+		}
+		if (!data || data.variant !== 'custom') {
+			return;
+		}
+		const background = data.customBackground || '';
+		const text = data.customText || '';
+		if (background) {
+			banner.style.backgroundColor = background;
+			banner.style.borderColor = background;
+		}
+		if (text) {
+			banner.style.color = text;
+		}
 	}
 
 	let originalBodyHeight = null;

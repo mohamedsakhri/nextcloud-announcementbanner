@@ -1,6 +1,6 @@
 .announcementbanner-stack {
 	position: relative;
-	margin-top: var(--announcementbanner-offset, 56px);
+	top: var(--announcementbanner-offset, 56px);
 	margin-bottom: 8px;
 	display: flex;
 	flex-direction: column;
@@ -82,6 +82,11 @@
 	stroke: currentColor;
 }
 
+.announcementbanner--custom .announcementbanner__close,
+.announcementbanner--custom .announcementbanner__close svg {
+	color: inherit;
+}
+
 .announcementbanner__close:hover,
 .announcementbanner__close:focus {
 	opacity: 1;
@@ -107,6 +112,12 @@
 }
 
 .announcementbanner--info {
+  color: #fff;
+  background: #2980b9;
+  border-color: #2471a3;
+}
+
+.announcementbanner--custom {
   color: #fff;
   background: #2980b9;
   border-color: #2471a3;

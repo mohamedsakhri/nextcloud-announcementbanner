@@ -7,6 +7,8 @@
 		message: '',
 		messageTranslations: {},
 		variant: 'info',
+		customBackground: '',
+		customText: '',
 		dismissible: true,
 		readMoreText: '',
 		readMoreTextTranslations: {},
@@ -59,11 +61,16 @@
 
 	function serializeForm(form) {
 		const formData = new FormData(form);
+		const variant = formData.get('variant') ?? 'info';
+		const customBackground = (formData.get('customBackground') ?? '').trim();
+		const customText = (formData.get('customText') ?? '').trim();
 		return {
 			message: formData.get('message') ?? '',
 			readMoreText: formData.get('readMoreText') ?? '',
 			readMoreUrl: formData.get('readMoreUrl') ?? '',
-			variant: formData.get('variant') ?? 'info',
+			variant,
+			customBackground: variant === 'custom' ? customBackground : '',
+			customText: variant === 'custom' ? customText : '',
 			enabled: formData.get('enabled') !== null,
 			dismissible: formData.get('dismissible') !== null,
 			scheduleStart: toIsoDateTime(formData.get('scheduleStart') ?? ''),
@@ -223,6 +230,7 @@
 		banner.className = 'announcementbanner announcementbanner--' + variant;
 		banner.setAttribute('role', 'status');
 		banner.setAttribute('aria-live', 'polite');
+		applyCustomColors(banner, data);
 
 		const icon = document.createElement('span');
 		icon.className = 'announcementbanner__icon';
@@ -276,6 +284,27 @@
 		}
 
 		return banner;
+	}
+
+	function applyCustomColors(banner, data) {
+		if (!banner) {
+			return;
+		}
+		if (!data || data.variant !== 'custom') {
+			banner.style.removeProperty('background-color');
+			banner.style.removeProperty('color');
+			banner.style.removeProperty('border-color');
+			return;
+		}
+		const background = data.customBackground || '';
+		const text = data.customText || '';
+		if (background) {
+			banner.style.backgroundColor = background;
+			banner.style.borderColor = background;
+		}
+		if (text) {
+			banner.style.color = text;
+		}
 	}
 
 	function updatePageBanner(payload, previewContainer) {
@@ -346,6 +375,9 @@
 		const scheduleStartInput = form.querySelector('#announcementbanner-schedule-start');
 		const scheduleEndInput = form.querySelector('#announcementbanner-schedule-end');
 		const variantSelect = form.querySelector('#announcementbanner-variant');
+		const customBackgroundInput = form.querySelector('#announcementbanner-custom-background');
+		const customTextInput = form.querySelector('#announcementbanner-custom-text');
+		const customColors = form.querySelector('[data-announcementbanner-custom]');
 		const enabledInput = form.querySelector('#announcementbanner-enabled');
 		const dismissibleInput = form.querySelector('#announcementbanner-dismissible');
 		const previewContainer = root.querySelector('.announcementbanner-preview');
@@ -404,6 +436,13 @@
 			if (variantSelect) {
 				variantSelect.value = banner.variant || 'info';
 			}
+			if (customBackgroundInput) {
+				customBackgroundInput.value = banner.customBackground || '#2980b9';
+			}
+			if (customTextInput) {
+				customTextInput.value = banner.customText || '#ffffff';
+			}
+			updateCustomColorStyles();
 			if (enabledInput) {
 				enabledInput.checked = !!banner.enabled;
 			}
@@ -413,7 +452,24 @@
 
 			renderTranslations('message', banner.messageTranslations || {});
 			renderTranslations('readMoreText', banner.readMoreTextTranslations || {});
+			toggleCustomColors();
 			updatePageBanner(serializeForm(form), previewContainer);
+		}
+
+		function toggleCustomColors() {
+			if (!customColors || !variantSelect) {
+				return;
+			}
+			customColors.hidden = variantSelect.value !== 'custom';
+		}
+
+		function updateCustomColorStyles() {
+			if (customBackgroundInput) {
+				customBackgroundInput.style.setProperty('--announcementbanner-color', customBackgroundInput.value || 'transparent');
+			}
+			if (customTextInput) {
+				customTextInput.style.setProperty('--announcementbanner-color', customTextInput.value || 'transparent');
+			}
 		}
 
 		function renderBannerRow(banner) {
@@ -535,6 +591,7 @@
 				OC.Notification.showTemporary(t(APP_ID, 'Banner saved'));
 				await loadBanners();
 				toggleView(false);
+				window.location.reload();
 			} catch (error) {
 				console.error(error);
 				OC.Notification.showTemporary(t(APP_ID, 'Unable to save banner'));
@@ -558,7 +615,14 @@
 			await saveBanner();
 		});
 
-		[variantSelect, enabledInput, dismissibleInput].forEach((el) => {
+		if (variantSelect) {
+			variantSelect.addEventListener('change', () => {
+				toggleCustomColors();
+				updatePageBanner(serializeForm(form), previewContainer);
+			});
+		}
+
+		[enabledInput, dismissibleInput].forEach((el) => {
 			if (!el) {
 				return;
 			}
@@ -570,6 +634,16 @@
 				return;
 			}
 			el.addEventListener('input', () => updatePageBanner(serializeForm(form), previewContainer));
+		});
+
+		[customBackgroundInput, customTextInput].forEach((el) => {
+			if (!el) {
+				return;
+			}
+			el.addEventListener('input', () => {
+				updateCustomColorStyles();
+				updatePageBanner(serializeForm(form), previewContainer);
+			});
 		});
 
 		if (addButton) {

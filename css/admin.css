@@ -58,6 +58,15 @@
 	background: var(--color-main-background, #fff);
 }
 
+.announcementbanner-overview__description {
+	margin: 0;
+	color: var(--color-text-maxcontrast);
+}
+
+.announcementbanner-overview__description + .announcementbanner-overview__description {
+	margin-top: 6px;
+}
+
 .announcementbanner-overview__row {
 	display: grid;
 	grid-template-columns: 110px minmax(0, 1fr) 160px 160px 90px;
@@ -170,6 +179,14 @@
 	align-items: center;
 	gap: 12px;
 	margin-bottom: 12px;
+}
+
+.announcementbanner-back-icon {
+	width: 16px;
+	height: 16px;
+	margin-right: 6px;
+	vertical-align: middle;
+	filter: var(--background-invert-if-dark);
 }
 
 .announcementbanner-detail__header h3 {
@@ -339,6 +356,10 @@
 	background: #1f5d94;
 	color: #e5f0ff;
 }
+#announcementbanner-variant option[value="custom"] {
+	background: #3b3b3b;
+	color: #f2f2f2;
+}
 
 .announcementbanner-field {
 	display: grid;
@@ -378,6 +399,75 @@
 .announcementbanner-input:focus {
 	outline: 2px solid var(--color-primary-element, #1d7bf0);
 	outline-offset: 0;
+}
+
+.announcementbanner-custom-colors {
+	margin-top: 10px;
+	display: grid;
+	gap: 8px;
+}
+
+.announcementbanner-custom-colors[hidden] {
+	display: none;
+}
+
+.announcementbanner-custom-color {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.announcementbanner-custom-color label {
+	flex: 1;
+	font-weight: 600;
+}
+
+.announcementbanner-color-input {
+	width: 54px;
+	height: 32px;
+	border: none;
+	border-radius: 6px;
+	padding: 0;
+	background: transparent;
+	appearance: none;
+	-webkit-appearance: none;
+	overflow: hidden;
+}
+
+.announcementbanner-color-input:focus {
+	outline: 2px solid var(--color-primary-element, #1d7bf0);
+	outline-offset: 2px;
+}
+
+.announcementbanner-color-input::-webkit-color-swatch-wrapper {
+	padding: 0;
+	width: 100%;
+	height: 100%;
+}
+
+.announcementbanner-color-input::-webkit-color-swatch {
+	border: none;
+	border-radius: 6px;
+	width: 100%;
+	height: 100%;
+	background-color: var(--announcementbanner-color, transparent);
+}
+
+.announcementbanner-color-input::-moz-color-swatch {
+	border: none;
+	border-radius: 6px;
+	width: 100%;
+	height: 100%;
+	background-color: var(--announcementbanner-color, transparent);
+}
+
+#announcementbanner-custom-background, #announcementbanner-custom-text {
+	background-color: transparent;
+	padding: 0;
+}
+
+.announcementbanner-custom-colors__hint {
+	margin: 0;
 }
 
 .announcementbanner-actions {

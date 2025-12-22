@@ -16,6 +16,8 @@ class ConfigService {
     private const KEY_MESSAGE = 'message';
     private const KEY_MESSAGE_TRANSLATIONS = 'message_translations';
     private const KEY_VARIANT = 'variant';
+    private const KEY_CUSTOM_BACKGROUND = 'custom_background';
+    private const KEY_CUSTOM_TEXT = 'custom_text';
     private const KEY_DISMISSIBLE = 'dismissible';
     private const KEY_READ_MORE_TEXT = 'read_more_text';
     private const KEY_READ_MORE_TEXT_TRANSLATIONS = 'read_more_text_translations';
@@ -26,7 +28,7 @@ class ConfigService {
     /**
      * @var string[]
      */
-    private array $allowedVariants = ['danger', 'success', 'warning', 'info'];
+    private array $allowedVariants = ['danger', 'success', 'warning', 'info', 'custom'];
 
     public function __construct(
         private IConfig $config,
@@ -82,6 +84,8 @@ class ConfigService {
         string $message,
         array $messageTranslations,
         string $variant,
+        string $customBackground,
+        string $customText,
         bool $dismissible,
         string $readMoreText,
         array $readMoreTextTranslations,
@@ -100,6 +104,8 @@ class ConfigService {
             $message,
             $messageTranslations,
             $variant,
+            $customBackground,
+            $customText,
             $dismissible,
             $readMoreText,
             $readMoreTextTranslations,
@@ -123,6 +129,8 @@ class ConfigService {
         string $message,
         array $messageTranslations,
         string $variant,
+        string $customBackground,
+        string $customText,
         bool $dismissible,
         string $readMoreText,
         array $readMoreTextTranslations,
@@ -145,6 +153,8 @@ class ConfigService {
                 $message,
                 $messageTranslations,
                 $variant,
+                $customBackground,
+                $customText,
                 $dismissible,
                 $readMoreText,
                 $readMoreTextTranslations,
@@ -210,6 +220,8 @@ class ConfigService {
         $message = $banner['message'] ?? '';
         $messageTranslations = $banner['messageTranslations'] ?? [];
         $variant = $banner['variant'] ?? 'info';
+        $customBackground = $banner['customBackground'] ?? '';
+        $customText = $banner['customText'] ?? '';
         $readMoreText = $banner['readMoreText'] ?? '';
         $readMoreTextTranslations = $banner['readMoreTextTranslations'] ?? [];
         $readMoreUrl = $banner['readMoreUrl'] ?? '';
@@ -223,6 +235,8 @@ class ConfigService {
             $message,
             $this->encodeTranslations($messageTranslations),
             $variant,
+            $customBackground,
+            $customText,
             $readMoreText,
             $this->encodeTranslations($readMoreTextTranslations),
             $readMoreUrl,
@@ -243,6 +257,8 @@ class ConfigService {
             'message' => '',
             'messageTranslations' => [],
             'variant' => 'info',
+            'customBackground' => '',
+            'customText' => '',
             'dismissible' => true,
             'readMoreText' => '',
             'readMoreTextTranslations' => [],
@@ -289,6 +305,8 @@ class ConfigService {
         string $message,
         array $messageTranslations,
         string $variant,
+        string $customBackground,
+        string $customText,
         bool $dismissible,
         string $readMoreText,
         array $readMoreTextTranslations,
@@ -300,6 +318,8 @@ class ConfigService {
         $message = trim($message);
         $messageTranslations = $this->normalizeTranslations($messageTranslations);
         $variant = $this->normalizeVariant($variant);
+        $customBackground = $this->normalizeColor($customBackground);
+        $customText = $this->normalizeColor($customText);
         $readMoreText = trim($readMoreText);
         $readMoreTextTranslations = $this->normalizeTranslations($readMoreTextTranslations);
         $readMoreUrl = trim($readMoreUrl);
@@ -324,6 +344,8 @@ class ConfigService {
             'message' => $message,
             'messageTranslations' => $messageTranslations,
             'variant' => $variant,
+            'customBackground' => $customBackground,
+            'customText' => $customText,
             'dismissible' => $dismissible,
             'readMoreText' => $readMoreText,
             'readMoreTextTranslations' => $readMoreTextTranslations,
@@ -381,6 +403,8 @@ class ConfigService {
             'message' => trim((string)($banner['message'] ?? '')),
             'messageTranslations' => $this->normalizeTranslations(is_array($messageTranslations) ? $messageTranslations : []),
             'variant' => $this->normalizeVariant((string)($banner['variant'] ?? 'info')),
+            'customBackground' => $this->normalizeColor((string)($banner['customBackground'] ?? '')),
+            'customText' => $this->normalizeColor((string)($banner['customText'] ?? '')),
             'dismissible' => (bool)($banner['dismissible'] ?? true),
             'readMoreText' => trim((string)($banner['readMoreText'] ?? '')),
             'readMoreTextTranslations' => $this->normalizeTranslations(is_array($readMoreTextTranslations) ? $readMoreTextTranslations : []),
@@ -425,6 +449,8 @@ class ConfigService {
             $legacyMessage,
             $this->getTranslations(self::KEY_MESSAGE_TRANSLATIONS),
             $this->getAppValue(self::KEY_VARIANT, 'info'),
+            '',
+            '',
             $this->getAppValue(self::KEY_DISMISSIBLE, '1') === '1',
             $legacyReadMoreText,
             $this->getTranslations(self::KEY_READ_MORE_TEXT_TRANSLATIONS),
@@ -446,6 +472,19 @@ class ConfigService {
         }
 
         return $variant;
+    }
+
+    private function normalizeColor(string $value): string {
+        $value = trim($value);
+        if ($value === '') {
+            return '';
+        }
+
+        if (!preg_match('/^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i', $value)) {
+            return '';
+        }
+
+        return strtolower($value);
     }
 
     /**
