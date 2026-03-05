@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2.1.0
+
+- Add text alignment option for banner content (left, center, right).
+- Apply alignment consistently to icon + message in both admin preview and public banner.
+- Improve RTL handling so alignment behaves correctly in Arabic and other RTL layouts.
+
+## 2.0.1
+
+- Add support for Nextcloud 33 / Winter 26
+
 ## 2.0.0
 
 - Introduce multi-banner management with an overview list, status labels, and edit/delete actions.

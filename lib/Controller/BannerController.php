@@ -63,6 +63,7 @@ class BannerController extends Controller {
                 $data['variant'],
                 $data['customBackground'],
                 $data['customText'],
+                $data['textAlignment'],
                 $data['dismissible'],
                 $data['readMoreText'],
                 $data['readMoreTextTranslations'],
@@ -95,6 +96,7 @@ class BannerController extends Controller {
                 $data['variant'],
                 $data['customBackground'],
                 $data['customText'],
+                $data['textAlignment'],
                 $data['dismissible'],
                 $data['readMoreText'],
                 $data['readMoreTextTranslations'],
@@ -149,7 +151,7 @@ class BannerController extends Controller {
     }
 
     /**
-     * @return array{enabled: bool, message: string, messageTranslations: array<string, string>, variant: string, customBackground: string, customText: string, dismissible: bool, readMoreText: string, readMoreTextTranslations: array<string, string>, readMoreUrl: string, scheduleStart: string, scheduleEnd: string}
+     * @return array{enabled: bool, message: string, messageTranslations: array<string, string>, variant: string, customBackground: string, customText: string, textAlignment: string, dismissible: bool, readMoreText: string, readMoreTextTranslations: array<string, string>, readMoreUrl: string, scheduleStart: string, scheduleEnd: string}
      */
     private function extractBannerPayload(array $payload): array {
         return [
@@ -160,6 +162,7 @@ class BannerController extends Controller {
             'variant' => (string)($payload['variant'] ?? 'info'),
             'customBackground' => (string)($payload['customBackground'] ?? ''),
             'customText' => (string)($payload['customText'] ?? ''),
+            'textAlignment' => (string)($payload['textAlignment'] ?? 'left'),
             'readMoreText' => (string)($payload['readMoreText'] ?? ''),
             'readMoreTextTranslations' => $this->normalizeTranslations($payload['readMoreTextTranslations'] ?? []),
             'readMoreUrl' => (string)($payload['readMoreUrl'] ?? ''),

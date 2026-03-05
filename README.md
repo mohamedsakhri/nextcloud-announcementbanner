@@ -44,6 +44,7 @@ The Announcement Banner App adds customizable notification bars at the top of ev
 - Theme variants: info, success, warning, danger, custom.
 - Optional dismiss button for users.
 - Optional “read more” link with customizable label and URL.
+- Text alignment control (left, center, right) for banner content.
 - Translations for banner message and read-more label (fallback to default).
 - Live preview in the admin settings; changes take effect for users after saving.
 - Multi-language support (English, German, French, Spanish, …).
@@ -77,6 +78,7 @@ Install from the Nextcloud App Store: [Announcement Banner](https://apps.nextclo
 - **Add new banner** to create a new message; manage all banners from the overview.
 - **Banner message**: Text to display.
 - **Color scheme**: Info, Success, Warning, Danger, Custom (custom background/text colors).
+- **Text alignment**: Left, Center, Right.
 - **Enable banner** toggle.
 - **Dismiss icon** toggle (allow users to hide the banner).
 - **Read more**: Optional label + URL (shown inline with an arrow icon).

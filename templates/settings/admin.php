@@ -270,6 +270,25 @@ $settings = $_['settings'];
 					</div>
 				</div>
 
+				<div class="announcementbanner-field">
+					<label class="announcementbanner-field__label" for="announcementbanner-text-alignment">
+						<?php p($_['labels']['textAlignment']); ?>
+					</label>
+					<div class="announcementbanner-field__control">
+						<select id="announcementbanner-text-alignment" name="textAlignment" class="announcementbanner-input">
+							<option value="left" <?php if (($settings['textAlignment'] ?? 'left') === 'left') { print_unescaped('selected'); } ?>>
+								<?php p($_['labels']['alignLeft']); ?>
+							</option>
+							<option value="center" <?php if (($settings['textAlignment'] ?? 'left') === 'center') { print_unescaped('selected'); } ?>>
+								<?php p($_['labels']['alignCenter']); ?>
+							</option>
+							<option value="right" <?php if (($settings['textAlignment'] ?? 'left') === 'right') { print_unescaped('selected'); } ?>>
+								<?php p($_['labels']['alignRight']); ?>
+							</option>
+						</select>
+					</div>
+				</div>
+
 				<div class="announcementbanner-field announcementbanner-field--toggle">
 					<div class="announcementbanner-toggle">
 						<input

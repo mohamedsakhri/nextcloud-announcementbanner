@@ -9,6 +9,7 @@
 		variant: 'info',
 		customBackground: '',
 		customText: '',
+		textAlignment: 'left',
 		dismissible: true,
 		readMoreText: '',
 		readMoreTextTranslations: {},
@@ -71,6 +72,7 @@
 			variant,
 			customBackground: variant === 'custom' ? customBackground : '',
 			customText: variant === 'custom' ? customText : '',
+			textAlignment: (formData.get('textAlignment') ?? 'left').toString(),
 			enabled: formData.get('enabled') !== null,
 			dismissible: formData.get('dismissible') !== null,
 			scheduleStart: toIsoDateTime(formData.get('scheduleStart') ?? ''),
@@ -224,13 +226,44 @@
 		return div.innerHTML;
 	}
 
+	function normalizeTextAlignment(value) {
+		const alignment = String(value || '').trim().toLowerCase();
+		if (alignment === 'center' || alignment === 'right') {
+			return alignment;
+		}
+		return 'left';
+	}
+
+	function resolveContentJustify(alignment) {
+		if (alignment === 'center') {
+			return 'center';
+		}
+		if (typeof CSS !== 'undefined' && typeof CSS.supports === 'function' && CSS.supports('justify-content', alignment)) {
+			return alignment;
+		}
+
+		const html = document.documentElement;
+		const body = document.body;
+		const dirAttr = (html?.getAttribute('dir') || body?.getAttribute('dir') || '').toLowerCase();
+		const isRtl = dirAttr === 'rtl';
+		if (alignment === 'left') {
+			return isRtl ? 'flex-end' : 'flex-start';
+		}
+		return isRtl ? 'flex-start' : 'flex-end';
+	}
+
 	function buildBannerElement(data, { showDismiss = true } = {}) {
 		const banner = document.createElement('div');
 		const variant = data.variant || 'info';
+		const textAlignment = normalizeTextAlignment(data.textAlignment);
 		banner.className = 'announcementbanner announcementbanner--' + variant;
 		banner.setAttribute('role', 'status');
 		banner.setAttribute('aria-live', 'polite');
 		applyCustomColors(banner, data);
+
+		const content = document.createElement('div');
+		content.className = 'announcementbanner__content';
+		content.style.justifyContent = resolveContentJustify(textAlignment);
 
 		const icon = document.createElement('span');
 		icon.className = 'announcementbanner__icon';
@@ -245,7 +278,7 @@
 				</g>
 			</svg>
 		`;
-		banner.appendChild(icon);
+		content.appendChild(icon);
 
 		const message = document.createElement('div');
 		message.className = 'announcementbanner__message';
@@ -255,7 +288,9 @@
 			html += ' <a class="announcementbanner__readmore" href="' + escapeHtml(data.readMoreUrl) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(data.readMoreText) + ' ' + icon + '</a>';
 		}
 		message.innerHTML = html;
-		banner.appendChild(message);
+		message.style.textAlign = textAlignment;
+		content.appendChild(message);
+		banner.appendChild(content);
 
 		if (data.dismissible && showDismiss) {
 			const closeButton = document.createElement('button');
@@ -377,6 +412,7 @@
 		const variantSelect = form.querySelector('#announcementbanner-variant');
 		const customBackgroundInput = form.querySelector('#announcementbanner-custom-background');
 		const customTextInput = form.querySelector('#announcementbanner-custom-text');
+		const textAlignmentInput = form.querySelector('#announcementbanner-text-alignment');
 		const customColors = form.querySelector('[data-announcementbanner-custom]');
 		const enabledInput = form.querySelector('#announcementbanner-enabled');
 		const dismissibleInput = form.querySelector('#announcementbanner-dismissible');
@@ -441,6 +477,9 @@
 			}
 			if (customTextInput) {
 				customTextInput.value = banner.customText || '#ffffff';
+			}
+			if (textAlignmentInput) {
+				textAlignmentInput.value = normalizeTextAlignment(banner.textAlignment || 'left');
 			}
 			updateCustomColorStyles();
 			if (enabledInput) {
@@ -620,6 +659,10 @@
 				toggleCustomColors();
 				updatePageBanner(serializeForm(form), previewContainer);
 			});
+		}
+
+		if (textAlignmentInput) {
+			textAlignmentInput.addEventListener('change', () => updatePageBanner(serializeForm(form), previewContainer));
 		}
 
 		[enabledInput, dismissibleInput].forEach((el) => {

@@ -18,6 +18,7 @@ class ConfigService {
     private const KEY_VARIANT = 'variant';
     private const KEY_CUSTOM_BACKGROUND = 'custom_background';
     private const KEY_CUSTOM_TEXT = 'custom_text';
+    private const KEY_TEXT_ALIGNMENT = 'text_alignment';
     private const KEY_DISMISSIBLE = 'dismissible';
     private const KEY_READ_MORE_TEXT = 'read_more_text';
     private const KEY_READ_MORE_TEXT_TRANSLATIONS = 'read_more_text_translations';
@@ -29,6 +30,10 @@ class ConfigService {
      * @var string[]
      */
     private array $allowedVariants = ['danger', 'success', 'warning', 'info', 'custom'];
+    /**
+     * @var string[]
+     */
+    private array $allowedTextAlignments = ['left', 'center', 'right'];
 
     public function __construct(
         private IConfig $config,
@@ -86,6 +91,7 @@ class ConfigService {
         string $variant,
         string $customBackground,
         string $customText,
+        string $textAlignment,
         bool $dismissible,
         string $readMoreText,
         array $readMoreTextTranslations,
@@ -106,6 +112,7 @@ class ConfigService {
             $variant,
             $customBackground,
             $customText,
+            $textAlignment,
             $dismissible,
             $readMoreText,
             $readMoreTextTranslations,
@@ -131,6 +138,7 @@ class ConfigService {
         string $variant,
         string $customBackground,
         string $customText,
+        string $textAlignment,
         bool $dismissible,
         string $readMoreText,
         array $readMoreTextTranslations,
@@ -155,6 +163,7 @@ class ConfigService {
                 $variant,
                 $customBackground,
                 $customText,
+                $textAlignment,
                 $dismissible,
                 $readMoreText,
                 $readMoreTextTranslations,
@@ -222,6 +231,7 @@ class ConfigService {
         $variant = $banner['variant'] ?? 'info';
         $customBackground = $banner['customBackground'] ?? '';
         $customText = $banner['customText'] ?? '';
+        $textAlignment = $banner['textAlignment'] ?? 'left';
         $readMoreText = $banner['readMoreText'] ?? '';
         $readMoreTextTranslations = $banner['readMoreTextTranslations'] ?? [];
         $readMoreUrl = $banner['readMoreUrl'] ?? '';
@@ -237,6 +247,7 @@ class ConfigService {
             $variant,
             $customBackground,
             $customText,
+            $textAlignment,
             $readMoreText,
             $this->encodeTranslations($readMoreTextTranslations),
             $readMoreUrl,
@@ -259,6 +270,7 @@ class ConfigService {
             'variant' => 'info',
             'customBackground' => '',
             'customText' => '',
+            'textAlignment' => 'left',
             'dismissible' => true,
             'readMoreText' => '',
             'readMoreTextTranslations' => [],
@@ -307,6 +319,7 @@ class ConfigService {
         string $variant,
         string $customBackground,
         string $customText,
+        string $textAlignment,
         bool $dismissible,
         string $readMoreText,
         array $readMoreTextTranslations,
@@ -320,6 +333,7 @@ class ConfigService {
         $variant = $this->normalizeVariant($variant);
         $customBackground = $this->normalizeColor($customBackground);
         $customText = $this->normalizeColor($customText);
+        $textAlignment = $this->normalizeTextAlignment($textAlignment);
         $readMoreText = trim($readMoreText);
         $readMoreTextTranslations = $this->normalizeTranslations($readMoreTextTranslations);
         $readMoreUrl = trim($readMoreUrl);
@@ -346,6 +360,7 @@ class ConfigService {
             'variant' => $variant,
             'customBackground' => $customBackground,
             'customText' => $customText,
+            'textAlignment' => $textAlignment,
             'dismissible' => $dismissible,
             'readMoreText' => $readMoreText,
             'readMoreTextTranslations' => $readMoreTextTranslations,
@@ -405,6 +420,7 @@ class ConfigService {
             'variant' => $this->normalizeVariant((string)($banner['variant'] ?? 'info')),
             'customBackground' => $this->normalizeColor((string)($banner['customBackground'] ?? '')),
             'customText' => $this->normalizeColor((string)($banner['customText'] ?? '')),
+            'textAlignment' => $this->normalizeTextAlignment((string)($banner['textAlignment'] ?? 'left')),
             'dismissible' => (bool)($banner['dismissible'] ?? true),
             'readMoreText' => trim((string)($banner['readMoreText'] ?? '')),
             'readMoreTextTranslations' => $this->normalizeTranslations(is_array($readMoreTextTranslations) ? $readMoreTextTranslations : []),
@@ -451,6 +467,7 @@ class ConfigService {
             $this->getAppValue(self::KEY_VARIANT, 'info'),
             '',
             '',
+            $this->getAppValue(self::KEY_TEXT_ALIGNMENT, 'left'),
             $this->getAppValue(self::KEY_DISMISSIBLE, '1') === '1',
             $legacyReadMoreText,
             $this->getTranslations(self::KEY_READ_MORE_TEXT_TRANSLATIONS),
@@ -485,6 +502,15 @@ class ConfigService {
         }
 
         return strtolower($value);
+    }
+
+    private function normalizeTextAlignment(string $alignment): string {
+        $alignment = strtolower(trim($alignment));
+        if (!in_array($alignment, $this->allowedTextAlignments, true)) {
+            return 'left';
+        }
+
+        return $alignment;
     }
 
     /**
