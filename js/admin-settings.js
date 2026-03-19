@@ -285,7 +285,7 @@
 		let html = escapeHtml(data.message);
 		if (data.readMoreText && data.readMoreUrl) {
 			const icon = '\u2197';
-			html += ' <a class="announcementbanner__readmore" href="' + escapeHtml(data.readMoreUrl) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(data.readMoreText) + ' ' + icon + '</a>';
+			html += '<a class="announcementbanner__readmore" href="' + escapeHtml(data.readMoreUrl) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(data.readMoreText) + ' ' + icon + '</a>';
 		}
 		message.innerHTML = html;
 		message.style.textAlign = textAlignment;
@@ -417,6 +417,8 @@
 		const enabledInput = form.querySelector('#announcementbanner-enabled');
 		const dismissibleInput = form.querySelector('#announcementbanner-dismissible');
 		const previewContainer = root.querySelector('.announcementbanner-preview');
+		let currentBanners = [];
+		let isReordering = false;
 
 		const labels = {
 			status: {
@@ -430,6 +432,8 @@
 			editTitle: t(APP_ID, 'Edit banner'),
 			newTitle: t(APP_ID, 'New banner'),
 			deleteConfirm: t(APP_ID, 'Delete this banner?'),
+			moveUp: t(APP_ID, 'Move banner up'),
+			moveDown: t(APP_ID, 'Move banner down'),
 		};
 
 		initTranslationControls();
@@ -511,9 +515,87 @@
 			}
 		}
 
-		function renderBannerRow(banner) {
+		function setReorderingState(value) {
+			isReordering = value;
+			if (list) {
+				list.classList.toggle('announcementbanner-overview__body--busy', value);
+			}
+		}
+
+		function moveBannerItem(banners, fromIndex, toIndex) {
+			if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0 || fromIndex >= banners.length || toIndex >= banners.length) {
+				return banners.slice();
+			}
+
+			const next = banners.slice();
+			const [moved] = next.splice(fromIndex, 1);
+			next.splice(toIndex, 0, moved);
+			return next;
+		}
+
+		async function persistBannerOrder(nextBanners) {
+			if (isReordering || !list) {
+				return;
+			}
+
+			const previousBanners = currentBanners.slice();
+			setReorderingState(true);
+			renderOverview(nextBanners);
+
+			try {
+				const data = await requestJson(
+					OC.generateUrl('/apps/' + APP_ID + '/banners/reorder/save'),
+					{
+						method: 'POST',
+						body: {
+							ids: nextBanners.map((banner) => banner.id),
+						},
+					}
+				);
+				setReorderingState(false);
+				renderOverview(Array.isArray(data) ? data : nextBanners);
+			} catch (error) {
+				console.error(error);
+				setReorderingState(false);
+				renderOverview(previousBanners);
+				OC.Notification.showTemporary(error?.message || t(APP_ID, 'Unable to update banner order'));
+			}
+		}
+
+		async function moveBanner(fromIndex, toIndex) {
+			if (isReordering || fromIndex === toIndex) {
+				return;
+			}
+
+			await persistBannerOrder(moveBannerItem(currentBanners, fromIndex, toIndex));
+		}
+
+		function renderBannerRow(banner, index, total) {
 			const row = document.createElement('div');
 			row.className = 'announcementbanner-overview__row';
+			row.dataset.bannerId = banner.id || '';
+
+			const moveUpButton = document.createElement('button');
+			moveUpButton.type = 'button';
+			moveUpButton.className = 'announcementbanner-action announcementbanner-action--move';
+			moveUpButton.title = labels.moveUp;
+			moveUpButton.setAttribute('aria-label', labels.moveUp);
+			moveUpButton.textContent = '\u2191';
+			moveUpButton.disabled = index === 0 || isReordering;
+			moveUpButton.addEventListener('click', async () => {
+				await moveBanner(index, index - 1);
+			});
+
+			const moveDownButton = document.createElement('button');
+			moveDownButton.type = 'button';
+			moveDownButton.className = 'announcementbanner-action announcementbanner-action--move';
+			moveDownButton.title = labels.moveDown;
+			moveDownButton.setAttribute('aria-label', labels.moveDown);
+			moveDownButton.textContent = '\u2193';
+			moveDownButton.disabled = index === total - 1 || isReordering;
+			moveDownButton.addEventListener('click', async () => {
+				await moveBanner(index, index + 1);
+			});
 
 			const statusCell = document.createElement('div');
 			const badge = document.createElement('span');
@@ -534,6 +616,7 @@
 
 			const actionsCell = document.createElement('div');
 			actionsCell.className = 'announcementbanner-row-actions';
+
 			const editButton = document.createElement('button');
 			editButton.type = 'button';
 			editButton.className = 'announcementbanner-action';
@@ -557,6 +640,8 @@
 
 			actionsCell.appendChild(editButton);
 			actionsCell.appendChild(deleteButton);
+			actionsCell.appendChild(moveUpButton);
+			actionsCell.appendChild(moveDownButton);
 
 			row.appendChild(statusCell);
 			row.appendChild(previewCell);
@@ -573,9 +658,10 @@
 			}
 
 			list.innerHTML = '';
-			const bannerList = Array.isArray(banners) ? banners : [];
-			bannerList.forEach((banner) => {
-				list.appendChild(renderBannerRow(banner));
+			const bannerList = Array.isArray(banners) ? banners.slice() : [];
+			currentBanners = bannerList;
+			bannerList.forEach((banner, index) => {
+				list.appendChild(renderBannerRow(banner, index, bannerList.length));
 			});
 
 			if (count) {

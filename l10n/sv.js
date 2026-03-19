@@ -4,7 +4,8 @@ OC.L10N.register(
         "Announcement banner" : "Meddelandebanner",
         "The Announcement Banner app displays a customizable notification bar on every Nextcloud page, with your own message, a visual theme to highlight the type of announcement, and an optional link for more details. You can add translations so users see the banner in their language; otherwise the default message is shown. It offers a real-time preview of the banner, and your changes are shown to all users once they are saved." : "Appen Meddelandebanner visar en anpassningsbar notifieringsrad högst upp på varje sida i Nextcloud, med ditt eget meddelande, ett visuellt tema som markerar typen av information samt en valfri länk för mer detaljer. Du kan lägga till översättningar så att användare ser bannern på sitt språk, annars visas standardmeddelandet. En förhandsgranskning visas i realtid och ändringarna blir synliga för alla användare när de sparas.",
         "Show an announcement banner at the top of every page" : "Visa en meddelandebanner högst upp på varje sida",
-        "You can create multiple banners, schedule them, and manage them from this overview." : "Du kan skapa flera banners, schemalägga dem och hantera dem från den här översikten.",
+    "You can create multiple banners, schedule them, and manage them from this overview." : "Du kan skapa flera banners, schemalägga dem och hantera dem från den här översikten.",
+    "Use the arrow buttons to change the order in which banners are shown." : "Använd pilknapparna för att justera ordningen på banners. Detta är relevant när flera banners är aktiva samtidigt.",
         "Banner message" : "Meddelande",
         "What do you need everyone to know?" : "Vad behöver alla veta?",
         "Color scheme" : "Färgschema",
@@ -60,7 +61,9 @@ OC.L10N.register(
         "Delete this banner?" : "Ta bort denna banner?",
         "Banner settings saved" : "Bannerinställningar sparade",
         "Unable to save banner settings" : "Kunde inte spara bannerinställningar",
-        "Dismiss banner" : "Stäng banner"
+        "Dismiss banner" : "Stäng banner",
+        "Move banner up" : "Flytta banner upp",
+        "Move banner down" : "Flytta banner ner"
     },
     "nplurals=2; plural=(n != 1);"
 );

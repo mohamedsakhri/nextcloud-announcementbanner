@@ -4,6 +4,7 @@
         "The Announcement Banner app displays a customizable notification bar on every Nextcloud page, with your own message, a visual theme to highlight the type of announcement, and an optional link for more details. You can add translations so users see the banner in their language; otherwise the default message is shown. It offers a real-time preview of the banner, and your changes are shown to all users once they are saved.": "يقدّم تطبيق لافتة الإعلانات شريط إشعارات قابلًا للتخصيص في كل صفحة من صفحات Nextcloud، مع رسالة مخصصة، ونمط بصري يبرز نوع الإعلان، ورابط اختياري لمزيد من التفاصيل. يمكنك إضافة ترجمات حتى يرى المستخدمون اللافتة بلغتهم؛ وإلا فستظهر الرسالة الافتراضية. يوفّر معاينة فورية للافتة، وتظهر التغييرات للجميع بعد حفظها.",
         "Show an announcement banner at the top of every page": "اعرض لافتة إعلان في أعلى كل صفحة",
         "You can create multiple banners, schedule them, and manage them from this overview.": "يمكنك هنا إنشاء عدة لافتات وجدولتها وإدارتها من هذه النظرة العامة.",
+        "Use the arrow buttons to change the order in which banners are shown.": "استخدم أزرار الأسهم لضبط ترتيب اللافتات. يكون هذا مهمًا عندما تكون عدة لافتات نشطة في الوقت نفسه.",
         "Banner message": "رسالة اللافتة",
         "What do you need everyone to know?": "ما الذي تحتاج أن يعرفه الجميع؟",
         "Color scheme": "مخطط الألوان",
@@ -59,7 +60,9 @@
         "Delete this banner?": "هل تريد حذف هذه اللافتة؟",
         "Banner settings saved": "تم حفظ إعدادات اللافتة",
         "Unable to save banner settings": "تعذّر حفظ إعدادات اللافتة",
-        "Dismiss banner": "إخفاء اللافتة"
+        "Dismiss banner": "إخفاء اللافتة",
+        "Move banner up": "نقل اللافتة إلى أعلى",
+        "Move banner down": "نقل اللافتة إلى أسفل"
     },
     "pluralForm": "nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5;"
 }

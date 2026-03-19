@@ -130,6 +130,36 @@ class BannerController extends Controller {
         return new DataResponse(['id' => $id]);
     }
 
+    #[AdminRequired]
+    #[CSRFRequired]
+    public function reorderBanners(): DataResponse {
+        $payload = $this->readInput();
+        $ids = $payload['ids'] ?? [];
+
+        if (is_string($ids)) {
+            $decoded = json_decode($ids, true);
+            $ids = is_array($decoded) ? $decoded : [];
+        }
+
+        if (!is_array($ids)) {
+            return new DataResponse(
+                ['message' => 'Invalid banner order payload.'],
+                Http::STATUS_BAD_REQUEST
+            );
+        }
+
+        try {
+            $banners = $this->configService->reorderBanners($ids);
+        } catch (InvalidArgumentException $e) {
+            return new DataResponse(
+                ['message' => $e->getMessage()],
+                Http::STATUS_BAD_REQUEST
+            );
+        }
+
+        return new DataResponse($banners);
+    }
+
     /**
      * Merge form params with JSON body to support both content types.
      */

@@ -21,6 +21,9 @@ $settings = $_['settings'];
 		<p class="announcementbanner-overview__description settings-hint">
 			<?php p($_['labels']['overviewNote']); ?>
 		</p>
+		<p class="announcementbanner-overview__description settings-hint">
+			<?php p($_['labels']['overviewSortNote']); ?>
+		</p>
 		<div class="announcementbanner-overview__table">
 			<div class="announcementbanner-overview__row announcementbanner-overview__row--header">
 				<div><?php p($_['labels']['status']); ?></div>

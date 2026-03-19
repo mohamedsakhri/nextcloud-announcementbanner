@@ -206,6 +206,56 @@ class ConfigService {
     }
 
     /**
+     * @param array<int, mixed> $orderedIds
+     * @return array<int, array<string, mixed>>
+     */
+    public function reorderBanners(array $orderedIds): array {
+        $banners = $this->getBanners();
+        $normalizedIds = array_values(array_map(
+            static fn (mixed $id): string => trim((string)$id),
+            $orderedIds
+        ));
+
+        if (count($normalizedIds) !== count($banners)) {
+            throw new InvalidArgumentException('Banner order must include all banners.');
+        }
+
+        if (count(array_unique($normalizedIds)) !== count($normalizedIds)) {
+            throw new InvalidArgumentException('Banner order contains duplicate banner ids.');
+        }
+
+        $bannersById = [];
+        foreach ($banners as $banner) {
+            $id = (string)($banner['id'] ?? '');
+            if ($id === '') {
+                continue;
+            }
+            $bannersById[$id] = $banner;
+        }
+
+        if (count($bannersById) !== count($banners)) {
+            throw new InvalidArgumentException('Unable to reorder banners with missing ids.');
+        }
+
+        $reordered = [];
+        foreach ($normalizedIds as $id) {
+            if ($id === '' || !isset($bannersById[$id])) {
+                throw new InvalidArgumentException('Banner order contains unknown banner ids.');
+            }
+            $reordered[] = $bannersById[$id];
+        }
+
+        $this->saveBanners($reordered);
+
+        $withStatus = [];
+        foreach ($reordered as $banner) {
+            $withStatus[] = $this->withStatus($banner);
+        }
+
+        return $withStatus;
+    }
+
+    /**
      * @return array<int, array<string, mixed>>
      */
     public function getPublicBanners(): array {
@@ -387,11 +437,22 @@ class ConfigService {
         }
 
         $banners = [];
+        $shouldPersist = false;
         foreach ($decoded as $entry) {
             if (!is_array($entry)) {
                 continue;
             }
+
+            $storedId = trim((string)($entry['id'] ?? ''));
+            if ($storedId === '') {
+                $shouldPersist = true;
+            }
+
             $banners[] = $this->normalizeStoredBanner($entry);
+        }
+
+        if ($shouldPersist) {
+            $this->saveBanners($banners);
         }
 
         return $banners;

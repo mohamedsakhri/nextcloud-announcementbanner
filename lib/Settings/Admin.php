@@ -35,6 +35,7 @@ class Admin implements ISettings {
                     'messages' => $this->l10n->t('Banners'),
                     'addBanner' => $this->l10n->t('Add new banner'),
                     'overviewNote' => $this->l10n->t('You can create multiple banners, schedule them, and manage them from this overview.'),
+                    'overviewSortNote' => $this->l10n->t('Use the arrow buttons to change the order in which banners are shown.'),
                     'status' => $this->l10n->t('Status'),
                     'message' => $this->l10n->t('Banner message'),
                     'messagePlaceholder' => $this->l10n->t('What do you need everyone to know?'),

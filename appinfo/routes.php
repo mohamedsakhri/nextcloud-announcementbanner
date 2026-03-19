@@ -5,6 +5,7 @@ return [
     'routes' => [
         ['name' => 'banner#getBanner', 'url' => '/banner', 'verb' => 'GET'],
         ['name' => 'banner#listBanners', 'url' => '/banners', 'verb' => 'GET'],
+        ['name' => 'banner#reorderBanners', 'url' => '/banners/reorder/save', 'verb' => 'POST'],
         ['name' => 'banner#getBannerDetails', 'url' => '/banners/{id}', 'verb' => 'GET'],
         ['name' => 'banner#createBanner', 'url' => '/banners', 'verb' => 'POST'],
         ['name' => 'banner#updateBanner', 'url' => '/banners/{id}', 'verb' => 'PUT'],

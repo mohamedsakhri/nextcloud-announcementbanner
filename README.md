@@ -39,7 +39,8 @@ The Announcement Banner App adds customizable notification bars at the top of ev
 ## Features
 
 - Multiple banners with per-banner settings and lifecycle status.
-- Overview list with status (active, scheduled, expired, disabled), preview, schedule columns, and edit/delete actions.
+- Overview list with status (active, scheduled, expired, disabled), preview, schedule columns, and inline actions.
+- Manual banner ordering with up/down controls in the admin overview to define the display order when multiple banners are active.
 - Optional schedule: set a start time, an end time, or both to control when a banner is shown.
 - Theme variants: info, success, warning, danger, custom.
 - Optional dismiss button for users.
@@ -51,7 +52,7 @@ The Announcement Banner App adds customizable notification bars at the top of ev
 
 ## Multiple Banners
 
-Create and manage several banners at once. Each banner can be enabled or disabled independently and has its own message, theme, schedule, and link settings.
+Create and manage several banners at once. Each banner can be enabled or disabled independently and has its own message, theme, schedule, and link settings. When multiple banners are active at the same time, you can change their order from the overview.
 
 ## Translations
 
@@ -76,6 +77,7 @@ Install from the Nextcloud App Store: [Announcement Banner](https://apps.nextclo
 ## Configuration
 
 - **Add new banner** to create a new message; manage all banners from the overview.
+- **Overview order controls**: Use the arrow buttons in the actions column to change the order in which active banners are shown.
 - **Banner message**: Text to display.
 - **Color scheme**: Info, Success, Warning, Danger, Custom (custom background/text colors).
 - **Text alignment**: Left, Center, Right.
