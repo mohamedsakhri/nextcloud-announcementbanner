@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2.2.0
+
+- Add manual banner ordering in the admin overview with up/down controls.
+- Persist banner order so multiple active banners are shown in the configured sequence.
+- Integrate ordering controls into the actions column for a cleaner overview layout.
+- Add localized ordering help text and reorder button tooltips for bundled languages.
+- Improve compatibility for existing installations by persisting generated banner ids before reordering legacy entries.
+- More spacing between banner text and read-more label
+- Horizontal space as content
+
 ## 2.1.0
 
 - Add text alignment option for banner content (left, center, right).
