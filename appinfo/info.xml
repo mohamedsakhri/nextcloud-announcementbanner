@@ -22,7 +22,7 @@
     <author>Mohamed Sakhri</author>
     <namespace>AnnouncementBanner</namespace>
     <repository>https://github.com/mohamedsakhri/nextcloud-announcementbanner</repository>
-    <screenshot small-thumbnail="https://raw.githubusercontent.com/mohamedsakhri/nextcloud-announcementbanner/main/screenshots/screenshots/banner-admin-overview.png">https://raw.githubusercontent.com/mohamedsakhri/nextcloud-announcementbanner/main/screenshots/banner-admin-overview.png</screenshot>
+    <screenshot small-thumbnail="https://raw.githubusercontent.com/mohamedsakhri/nextcloud-announcementbanner/main/screenshots/banner-admin-overview.png">https://raw.githubusercontent.com/mohamedsakhri/nextcloud-announcementbanner/main/screenshots/banner-admin-overview.png</screenshot>
     <screenshot>https://raw.githubusercontent.com/mohamedsakhri/nextcloud-announcementbanner/main/screenshots/banner-admin-settings.png</screenshot>
     <screenshot>https://raw.githubusercontent.com/mohamedsakhri/nextcloud-announcementbanner/main/screenshots/banner-success.png</screenshot>
     <screenshot>https://raw.githubusercontent.com/mohamedsakhri/nextcloud-announcementbanner/main/screenshots/banner-success-dark.png</screenshot>
@@ -37,7 +37,7 @@
     <category>organization</category>
     <dependencies>
       <php min-version="8.1" max-version="8.4" />
-      <nextcloud min-version="30" max-version="33" />
+      <nextcloud min-version="30" max-version="34" />
     </dependencies>
     <settings>
         <admin>OCA\AnnouncementBanner\Settings\Admin</admin>
