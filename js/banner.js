@@ -179,7 +179,7 @@
 		let html = escapeHtml(data.message);
 		if (data.readMoreText && data.readMoreUrl) {
 			const icon = '\u2197'; // arrow
-			html += ' <a class="announcementbanner__readmore" href="' + escapeHtml(data.readMoreUrl) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(data.readMoreText) + ' ' + icon + '</a>';
+			html += '<a class="announcementbanner__readmore" href="' + escapeHtml(data.readMoreUrl) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(data.readMoreText) + ' ' + icon + '</a>';
 		}
 		message.innerHTML = html;
 		message.style.textAlign = textAlignment;

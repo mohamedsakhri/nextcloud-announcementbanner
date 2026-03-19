@@ -134,6 +134,7 @@
 }
 
 .announcementbanner__readmore {
+	margin-inline-start: 0.4em;
 	color: inherit;
 	text-decoration: underline;
 	font-weight: 600;
