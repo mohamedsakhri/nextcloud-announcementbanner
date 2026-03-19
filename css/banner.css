@@ -2,6 +2,7 @@
 	position: relative;
 	top: var(--announcementbanner-offset, 56px);
 	margin-bottom: 8px;
+	padding: 0 var(--body-container-margin);
 	display: flex;
 	flex-direction: column;
 	gap: 12px;
@@ -17,7 +18,7 @@
 	gap: 12px;
 	padding: 12px 18px;
 	font-weight: 600;
-	border-radius: 10px;
+	border-radius: var(--body-container-radius);
 	border: 1px solid transparent;
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 	margin: 0;
