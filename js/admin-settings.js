@@ -16,6 +16,8 @@
 		readMoreUrl: '',
 		scheduleStart: '',
 		scheduleEnd: '',
+		audienceTarget: 'all',
+		audienceGroups: [],
 	};
 
 	function toIsoDateTime(value) {
@@ -65,6 +67,7 @@
 		const variant = formData.get('variant') ?? 'info';
 		const customBackground = (formData.get('customBackground') ?? '').trim();
 		const customText = (formData.get('customText') ?? '').trim();
+		const audienceGroupsInput = form.querySelector('#announcementbanner-audience-groups');
 		return {
 			message: formData.get('message') ?? '',
 			readMoreText: formData.get('readMoreText') ?? '',
@@ -77,9 +80,230 @@
 			dismissible: formData.get('dismissible') !== null,
 			scheduleStart: toIsoDateTime(formData.get('scheduleStart') ?? ''),
 			scheduleEnd: toIsoDateTime(formData.get('scheduleEnd') ?? ''),
+			audienceTarget: (formData.get('audienceTarget') ?? 'all').toString(),
+			audienceGroups: readSelectValues(audienceGroupsInput),
 			messageTranslations: collectTranslations('message'),
 			readMoreTextTranslations: collectTranslations('readMoreText'),
 		};
+	}
+
+	function normalizeSelection(values) {
+		if (!Array.isArray(values)) {
+			if (values === null || values === undefined || values === '') {
+				return [];
+			}
+			values = [values];
+		}
+
+		return values
+			.map((value) => {
+				if (typeof value === 'string') {
+					return value.trim();
+				}
+				if (value && typeof value === 'object' && 'id' in value) {
+					return String(value.id || '').trim();
+				}
+				return String(value || '').trim();
+			})
+			.filter(Boolean);
+	}
+
+	function readSelectValues(selectEl) {
+		if (!selectEl) {
+			return [];
+		}
+
+		return normalizeSelection(Array.from(selectEl.selectedOptions || []).map((option) => option.value));
+	}
+
+	function syncAudienceGroupPicker(selectEl) {
+		if (!selectEl) {
+			return;
+		}
+
+		const picker = selectEl._announcementbannerPicker;
+		if (!picker) {
+			return;
+		}
+
+		const selectedValues = new Set(readSelectValues(selectEl));
+		picker.selectedOptions.innerHTML = '';
+		picker.options.forEach((option) => {
+			const isSelected = selectedValues.has(option.value);
+			option.element.classList.toggle('announcementbanner-group-option--selected', isSelected);
+			option.element.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+
+			if (!isSelected) {
+				return;
+			}
+
+			const chip = document.createElement('span');
+			chip.className = 'vs__selected';
+
+			const label = document.createElement('span');
+			label.textContent = option.label;
+
+			const remove = document.createElement('button');
+			remove.type = 'button';
+			remove.className = 'vs__deselect';
+			remove.setAttribute('aria-label', t(APP_ID, 'Remove'));
+			remove.textContent = '\u00d7';
+			remove.addEventListener('click', (event) => {
+				event.preventDefault();
+				event.stopPropagation();
+				option.source.selected = false;
+				selectEl.dispatchEvent(new Event('change', { bubbles: true }));
+			});
+
+			chip.appendChild(label);
+			chip.appendChild(remove);
+			picker.selectedOptions.appendChild(chip);
+		});
+
+		picker.selectedOptions.appendChild(picker.search);
+		picker.search.placeholder = selectedValues.size === 0
+			? (selectEl.dataset.placeholder || t(APP_ID, 'Specific groups'))
+			: '';
+	}
+
+	function filterAudienceGroupPicker(selectEl, query) {
+		const picker = selectEl?._announcementbannerPicker;
+		if (!picker) {
+			return;
+		}
+
+		const term = String(query || '').trim().toLowerCase();
+		picker.options.forEach((option) => {
+			const visible = term === '' || option.label.toLowerCase().includes(term);
+			option.element.hidden = !visible;
+		});
+	}
+
+	function closeAudienceGroupPicker(selectEl) {
+		const picker = selectEl?._announcementbannerPicker;
+		if (!picker) {
+			return;
+		}
+
+		picker.root.classList.remove('vs--open');
+		picker.control.setAttribute('aria-expanded', 'false');
+		picker.search.value = '';
+		filterAudienceGroupPicker(selectEl, '');
+	}
+
+	function enhanceAudienceGroupSelect(selectEl) {
+		if (!selectEl || selectEl._announcementbannerPicker) {
+			return;
+		}
+
+		const picker = document.createElement('div');
+		picker.className = 'v-select select nc-select-users vs--multiple vs--searchable';
+
+		const control = document.createElement('div');
+		control.className = 'vs__dropdown-toggle';
+		control.setAttribute('aria-haspopup', 'listbox');
+		control.setAttribute('aria-expanded', 'false');
+		control.tabIndex = 0;
+
+		const selectedOptions = document.createElement('div');
+		selectedOptions.className = 'vs__selected-options';
+
+		const search = document.createElement('input');
+		search.type = 'search';
+		search.className = 'vs__search';
+		search.autocomplete = 'off';
+		search.spellcheck = false;
+		search.placeholder = selectEl.dataset.placeholder || t(APP_ID, 'Specific groups');
+		search.setAttribute('aria-label', selectEl.dataset.placeholder || t(APP_ID, 'Specific groups'));
+
+		selectedOptions.appendChild(search);
+
+		const actions = document.createElement('div');
+		actions.className = 'vs__actions';
+
+		const indicator = document.createElement('span');
+		indicator.className = 'vs__open-indicator';
+		indicator.setAttribute('aria-hidden', 'true');
+		indicator.textContent = '\u2304';
+
+		actions.appendChild(indicator);
+		control.appendChild(selectedOptions);
+		control.appendChild(actions);
+
+		const list = document.createElement('ul');
+		list.className = 'vs__dropdown-menu';
+		list.setAttribute('role', 'listbox');
+
+		const optionEntries = Array.from(selectEl.options).map((sourceOption) => {
+			const optionButton = document.createElement('li');
+			optionButton.className = 'vs__dropdown-option';
+			optionButton.setAttribute('role', 'option');
+			optionButton.tabIndex = -1;
+			optionButton.textContent = sourceOption.textContent?.trim() || sourceOption.value;
+			optionButton.addEventListener('mousedown', (event) => {
+				event.preventDefault();
+			});
+			optionButton.addEventListener('click', () => {
+				sourceOption.selected = !sourceOption.selected;
+				selectEl.dispatchEvent(new Event('change', { bubbles: true }));
+				search.focus();
+			});
+			list.appendChild(optionButton);
+
+			return {
+				value: sourceOption.value,
+				label: sourceOption.textContent?.trim() || sourceOption.value,
+				source: sourceOption,
+				element: optionButton,
+			};
+		});
+
+		search.addEventListener('input', () => {
+			filterAudienceGroupPicker(selectEl, search.value);
+			picker.classList.add('vs--open');
+			control.setAttribute('aria-expanded', 'true');
+		});
+		control.addEventListener('click', () => {
+			picker.classList.add('vs--open');
+			control.setAttribute('aria-expanded', 'true');
+			search.focus();
+		});
+		control.addEventListener('focusin', () => {
+			picker.classList.add('vs--open');
+			control.setAttribute('aria-expanded', 'true');
+		});
+		search.addEventListener('keydown', (event) => {
+			if (event.key === 'Escape') {
+				event.preventDefault();
+				closeAudienceGroupPicker(selectEl);
+				control.focus();
+			}
+		});
+
+		document.addEventListener('click', (event) => {
+			if (!picker.contains(event.target)) {
+				closeAudienceGroupPicker(selectEl);
+			}
+		});
+
+		picker.appendChild(control);
+		picker.appendChild(list);
+		selectEl.insertAdjacentElement('afterend', picker);
+
+		selectEl._announcementbannerPicker = {
+			root: picker,
+			control,
+			selectedOptions,
+			search,
+			options: optionEntries,
+		};
+
+		selectEl.addEventListener('change', () => {
+			syncAudienceGroupPicker(selectEl);
+			control.setAttribute('aria-expanded', picker.classList.contains('vs--open') ? 'true' : 'false');
+		});
+
+		syncAudienceGroupPicker(selectEl);
 	}
 
 	function collectTranslations(fieldName) {
@@ -409,6 +633,15 @@
 		const readMoreUrlInput = form.querySelector('#announcementbanner-readmore-url');
 		const scheduleStartInput = form.querySelector('#announcementbanner-schedule-start');
 		const scheduleEndInput = form.querySelector('#announcementbanner-schedule-end');
+		const audienceTargetInput = form.querySelector('#announcementbanner-audience-target');
+		const audienceGroupsInput = form.querySelector('#announcementbanner-audience-groups');
+		const audienceGroupsWrapper = form.querySelector('[data-announcementbanner-target-groups]');
+		const availableGroupLabels = audienceGroupsInput
+			? Array.from(audienceGroupsInput.options).reduce((map, option) => {
+				map[option.value] = option.textContent?.trim() || option.value;
+				return map;
+			}, {})
+			: {};
 		const variantSelect = form.querySelector('#announcementbanner-variant');
 		const customBackgroundInput = form.querySelector('#announcementbanner-custom-background');
 		const customTextInput = form.querySelector('#announcementbanner-custom-text');
@@ -419,7 +652,6 @@
 		const previewContainer = root.querySelector('.announcementbanner-preview');
 		let currentBanners = [];
 		let isReordering = false;
-
 		const labels = {
 			status: {
 				active: t(APP_ID, 'Active'),
@@ -434,9 +666,13 @@
 			deleteConfirm: t(APP_ID, 'Delete this banner?'),
 			moveUp: t(APP_ID, 'Move banner up'),
 			moveDown: t(APP_ID, 'Move banner down'),
+			audienceAll: t(APP_ID, 'Everyone'),
+			audienceAdmins: t(APP_ID, 'Admins only'),
+			audienceGroups: t(APP_ID, 'Specific groups'),
 		};
 
 		initTranslationControls();
+		enhanceAudienceGroupSelect(audienceGroupsInput);
 
 		function toggleView(showDetail) {
 			if (overview) {
@@ -473,6 +709,16 @@
 			if (scheduleEndInput) {
 				scheduleEndInput.value = toLocalInputValue(banner.scheduleEnd || '');
 			}
+			if (audienceTargetInput) {
+				audienceTargetInput.value = banner.audienceTarget || 'all';
+			}
+			if (audienceGroupsInput) {
+				const selectedGroups = Array.isArray(banner.audienceGroups) ? banner.audienceGroups : [];
+				Array.from(audienceGroupsInput.options).forEach((option) => {
+					option.selected = selectedGroups.includes(option.value);
+				});
+				syncAudienceGroupPicker(audienceGroupsInput);
+			}
 			if (variantSelect) {
 				variantSelect.value = banner.variant || 'info';
 			}
@@ -495,8 +741,17 @@
 
 			renderTranslations('message', banner.messageTranslations || {});
 			renderTranslations('readMoreText', banner.readMoreTextTranslations || {});
+			toggleAudienceGroups();
 			toggleCustomColors();
 			updatePageBanner(serializeForm(form), previewContainer);
+		}
+
+		function toggleAudienceGroups() {
+			if (!audienceGroupsWrapper || !audienceTargetInput) {
+				return;
+			}
+
+			audienceGroupsWrapper.hidden = audienceTargetInput.value !== 'groups';
 		}
 
 		function toggleCustomColors() {
@@ -531,6 +786,25 @@
 			const [moved] = next.splice(fromIndex, 1);
 			next.splice(toIndex, 0, moved);
 			return next;
+		}
+
+		function formatAudienceSummary(banner) {
+			const audienceTarget = banner?.audienceTarget || 'all';
+			if (audienceTarget === 'admins') {
+				return labels.audienceAdmins;
+			}
+
+			if (audienceTarget === 'groups') {
+				const groupNames = normalizeSelection(banner?.audienceGroups || [])
+					.map((groupId) => availableGroupLabels[groupId] || groupId);
+				if (groupNames.length > 0) {
+					return groupNames.join(', ');
+				}
+
+				return labels.audienceGroups;
+			}
+
+			return labels.audienceAll;
 		}
 
 		async function persistBannerOrder(nextBanners) {
@@ -608,6 +882,10 @@
 			previewCell.className = 'announcementbanner-overview__preview';
 			previewCell.appendChild(buildBannerElement(banner, { showDismiss: false }));
 
+			const audienceCell = document.createElement('div');
+			audienceCell.className = 'announcementbanner-overview__audience';
+			audienceCell.textContent = formatAudienceSummary(banner);
+
 			const startCell = document.createElement('div');
 			startCell.textContent = formatDateTime(banner.scheduleStart);
 
@@ -645,6 +923,7 @@
 
 			row.appendChild(statusCell);
 			row.appendChild(previewCell);
+			row.appendChild(audienceCell);
 			row.appendChild(startCell);
 			row.appendChild(endCell);
 			row.appendChild(actionsCell);
@@ -719,7 +998,7 @@
 				window.location.reload();
 			} catch (error) {
 				console.error(error);
-				OC.Notification.showTemporary(t(APP_ID, 'Unable to save banner'));
+				OC.Notification.showTemporary(error?.message || t(APP_ID, 'Unable to save banner'));
 			}
 		}
 
@@ -747,6 +1026,13 @@
 			});
 		}
 
+		if (audienceTargetInput) {
+			audienceTargetInput.addEventListener('change', () => {
+				toggleAudienceGroups();
+				updatePageBanner(serializeForm(form), previewContainer);
+			});
+		}
+
 		if (textAlignmentInput) {
 			textAlignmentInput.addEventListener('change', () => updatePageBanner(serializeForm(form), previewContainer));
 		}
@@ -764,6 +1050,10 @@
 			}
 			el.addEventListener('input', () => updatePageBanner(serializeForm(form), previewContainer));
 		});
+
+		if (audienceGroupsInput) {
+			audienceGroupsInput.addEventListener('change', () => updatePageBanner(serializeForm(form), previewContainer));
+		}
 
 		[customBackgroundInput, customTextInput].forEach((el) => {
 			if (!el) {

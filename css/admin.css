@@ -69,12 +69,12 @@
 
 .announcementbanner-overview__row {
 	display: grid;
-	grid-template-columns: 110px minmax(0, 1fr) 160px 160px 168px;
+	grid-template-columns: 110px minmax(260px, 1fr) minmax(180px, 220px) 160px 160px 168px;
 	gap: 12px;
 	align-items: center;
 	padding: 12px 16px;
 	border-top: 1px solid var(--color-border);
-	min-width: 920px;
+	min-width: 1140px;
 }
 
 .announcementbanner-overview__row--header {
@@ -99,6 +99,13 @@
 	max-width: none;
 	width: 100%;
 	min-width: 0;
+}
+
+.announcementbanner-overview__audience {
+	min-width: 0;
+	color: var(--color-text);
+	line-height: 1.4;
+	overflow-wrap: anywhere;
 }
 
 .announcementbanner-overview__empty {
@@ -401,6 +408,186 @@
 
 .announcementbanner-field__control {
 	width: 100%;
+}
+
+.announcementbanner-subfield-label {
+	display: block;
+	margin: 10px 0 6px;
+	font-weight: 600;
+}
+
+.announcementbanner-target-groups[hidden] {
+	display: none;
+}
+
+#announcementbanner-audience-groups {
+	min-height: 150px;
+	background: var(--color-main-background, #fff);
+}
+
+.announcementbanner-input--native-multiselect {
+	position: absolute;
+	opacity: 0;
+	pointer-events: none;
+	width: 1px;
+	height: 1px;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+
+.announcementbanner-target-groups .v-select.select.nc-select-users {
+	position: relative;
+	width: 100%;
+	margin: 0;
+}
+
+.announcementbanner-target-groups .v-select.select.nc-select-users .vs__dropdown-toggle {
+	display: flex;
+	align-items: flex-start;
+	width: 100%;
+	min-height: var(--default-clickable-area, 44px);
+	padding: var(--border-width-input, 2px);
+	border-radius: var(--border-radius-element, 10px);
+	background: var(--color-main-background, #fff);
+	box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-border-maxcontrast, #949494), 65% transparent);
+	cursor: text;
+}
+
+.announcementbanner-target-groups .v-select.select.nc-select-users .vs__dropdown-toggle:hover {
+	box-shadow: 0 0 0 1px var(--color-border-maxcontrast, #949494);
+}
+
+.announcementbanner-target-groups .v-select.select.nc-select-users .vs__dropdown-toggle:focus-within {
+	box-shadow: 0 0 0 2px var(--color-main-text, #222);
+}
+
+.announcementbanner-target-groups .v-select.select.nc-select-users.vs--open .vs__dropdown-toggle {
+	border-bottom-left-radius: 0;
+	border-bottom-right-radius: 0;
+	box-shadow: 0 0 0 2px var(--color-main-text, #222);
+}
+
+.announcementbanner-target-groups .v-select.select.nc-select-users .vs__selected-options {
+	display: flex;
+	flex: 1 1 auto;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 4px;
+	padding: 0 5px;
+	min-height: calc(var(--default-clickable-area, 44px) - 2 * var(--border-width-input, 2px));
+}
+
+.announcementbanner-target-groups .v-select.select.nc-select-users .vs__selected {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	height: calc(var(--default-clickable-area, 44px) - 2 * var(--border-width-input, 2px) - var(--default-grid-baseline, 4px));
+	margin: calc(var(--default-grid-baseline, 4px) / 2) 0;
+	padding: 0 8px 0 12px;
+	border: none;
+	border-radius: 16px;
+	background: var(--color-primary-element-light, #eaf3ff);
+	color: var(--color-main-text, #222);
+	line-height: var(--default-line-height, 1.4);
+	max-width: 100%;
+}
+
+.announcementbanner-target-groups .v-select.select.nc-select-users .vs__selected span:first-child {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.announcementbanner-target-groups .v-select.select.nc-select-users .vs__deselect {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 18px;
+	height: 18px;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: var(--color-main-text, #222);
+	cursor: pointer;
+}
+
+.announcementbanner-target-groups .v-select.select.nc-select-users .vs__search,
+.announcementbanner-target-groups .v-select.select.nc-select-users .vs__search:focus {
+	flex: 1 0 120px;
+	width: 0;
+	min-width: 120px;
+	height: calc(var(--default-clickable-area, 44px) - 2 * var(--border-width-input, 2px));
+	margin: 0;
+	padding: 0 7px;
+	border: 1px solid transparent;
+	outline: none;
+	background: transparent;
+	box-shadow: none;
+	color: var(--color-main-text, #222);
+}
+
+.announcementbanner-target-groups .v-select.select.nc-select-users .vs__search::placeholder {
+	color: var(--color-text-maxcontrast, #6b7280);
+}
+
+.announcementbanner-target-groups .v-select.select.nc-select-users .vs__actions {
+	display: flex;
+	align-items: center;
+	align-self: stretch;
+	padding: 0 8px 0 4px;
+}
+
+.announcementbanner-target-groups .v-select.select.nc-select-users .vs__open-indicator {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 20px;
+	color: var(--color-main-text, #222);
+	font-size: 16px;
+	line-height: 1;
+	transition: transform var(--animation-quick, 120ms) ease;
+}
+
+.announcementbanner-target-groups .v-select.select.nc-select-users.vs--open .vs__open-indicator {
+	transform: rotate(180deg);
+}
+
+.announcementbanner-target-groups .v-select.select.nc-select-users .vs__dropdown-menu {
+	position: absolute;
+	top: calc(100% - var(--border-width-input, 2px));
+	left: 0;
+	right: 0;
+	z-index: 30;
+	display: none;
+	margin: 0;
+	padding: 4px;
+	list-style: none;
+	max-height: 280px;
+	overflow-y: auto;
+	border: var(--border-width-input-focused, 2px) solid var(--color-main-text, #222);
+	border-top: 0;
+	border-radius: 0 0 var(--border-radius-element, 10px) var(--border-radius-element, 10px);
+	background: var(--color-main-background, #fff);
+	box-shadow: -2px 0 0 var(--color-main-background, #fff), 0 2px 0 var(--color-main-background, #fff), 2px 0 0 var(--color-main-background, #fff);
+}
+
+.announcementbanner-target-groups .v-select.select.nc-select-users.vs--open .vs__dropdown-menu {
+	display: block;
+}
+
+.announcementbanner-target-groups .v-select.select.nc-select-users .vs__dropdown-option {
+	display: block;
+	padding: 8px 20px;
+	border-radius: 6px;
+	color: var(--color-main-text, #222);
+	cursor: pointer;
+}
+
+.announcementbanner-target-groups .v-select.select.nc-select-users .vs__dropdown-option:hover,
+.announcementbanner-target-groups .v-select.select.nc-select-users .vs__dropdown-option.announcementbanner-group-option--selected {
+	background: var(--color-background-hover, #f3f4f6);
 }
 
 .announcementbanner-input {

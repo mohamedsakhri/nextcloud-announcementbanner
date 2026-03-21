@@ -28,6 +28,7 @@ $settings = $_['settings'];
 			<div class="announcementbanner-overview__row announcementbanner-overview__row--header">
 				<div><?php p($_['labels']['status']); ?></div>
 				<div><?php p($_['labels']['previewColumn']); ?></div>
+				<div><?php p($_['labels']['audienceTarget']); ?></div>
 				<div><?php p($_['labels']['starts']); ?></div>
 				<div><?php p($_['labels']['ends']); ?></div>
 				<div><?php p($_['labels']['actions']); ?></div>
@@ -221,6 +222,47 @@ $settings = $_['settings'];
 							class="announcementbanner-input"
 							value="<?php p($settings['scheduleEnd']); ?>"
 						/>
+					</div>
+				</div>
+
+				<div class="announcementbanner-field">
+					<label class="announcementbanner-field__label" for="announcementbanner-audience-target">
+						<?php p($_['labels']['audienceTarget']); ?>
+					</label>
+					<div class="announcementbanner-field__control">
+						<select id="announcementbanner-audience-target" name="audienceTarget" class="announcementbanner-input">
+							<option value="all" <?php if (($settings['audienceTarget'] ?? 'all') === 'all') { print_unescaped('selected'); } ?>>
+								<?php p($_['labels']['audienceAll']); ?>
+							</option>
+							<option value="admins" <?php if (($settings['audienceTarget'] ?? 'all') === 'admins') { print_unescaped('selected'); } ?>>
+								<?php p($_['labels']['audienceAdmins']); ?>
+							</option>
+							<option value="groups" <?php if (($settings['audienceTarget'] ?? 'all') === 'groups') { print_unescaped('selected'); } ?>>
+								<?php p($_['labels']['audienceGroups']); ?>
+							</option>
+						</select>
+						<div
+							class="announcementbanner-target-groups"
+							data-announcementbanner-target-groups
+							<?php if (($settings['audienceTarget'] ?? 'all') !== 'groups') { print_unescaped('hidden'); } ?>
+						>
+							<label for="announcementbanner-audience-groups" class="announcementbanner-subfield-label">
+								<?php p($_['labels']['audienceGroupsHelp']); ?>
+							</label>
+							<select
+								id="announcementbanner-audience-groups"
+								name="audienceGroups"
+								class="announcementbanner-input announcementbanner-input--native-multiselect"
+								multiple
+								size="6"
+							>
+								<?php foreach ($_['availableGroups'] as $gid => $name): ?>
+									<option value="<?php p($gid); ?>" <?php if (in_array($gid, $settings['audienceGroups'] ?? [], true)) { print_unescaped('selected'); } ?>>
+										<?php p($name); ?>
+									</option>
+								<?php endforeach; ?>
+							</select>
+						</div>
 					</div>
 				</div>
 

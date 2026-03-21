@@ -13,13 +13,18 @@ use OCP\AppFramework\Http\Attribute\CSRFRequired;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
 use OCP\AppFramework\Http\DataResponse;
+use OCP\IGroupManager;
 use OCP\IRequest;
+use OCP\IUser;
+use OCP\IUserSession;
 
 class BannerController extends Controller {
     public function __construct(
         string $appName,
         IRequest $request,
         private ConfigService $configService,
+        private IUserSession $userSession,
+        private IGroupManager $groupManager,
     ) {
         parent::__construct($appName, $request);
     }
@@ -27,8 +32,14 @@ class BannerController extends Controller {
     #[NoAdminRequired]
     #[NoCSRFRequired]
     public function getBanner(): DataResponse {
+        $user = $this->userSession->getUser();
+
         return new DataResponse([
-            'banners' => $this->configService->getPublicBanners(),
+            'banners' => $this->configService->getPublicBanners(
+                $user?->getUID(),
+                $this->isAdminUser($user),
+                $this->getViewerGroupIds($user),
+            ),
         ]);
     }
 
@@ -70,6 +81,8 @@ class BannerController extends Controller {
                 $data['readMoreUrl'],
                 $data['scheduleStart'],
                 $data['scheduleEnd'],
+                $data['audienceTarget'],
+                $data['audienceGroups'],
             );
         } catch (InvalidArgumentException $e) {
             return new DataResponse(
@@ -103,6 +116,8 @@ class BannerController extends Controller {
                 $data['readMoreUrl'],
                 $data['scheduleStart'],
                 $data['scheduleEnd'],
+                $data['audienceTarget'],
+                $data['audienceGroups'],
             );
         } catch (InvalidArgumentException $e) {
             $code = $e->getMessage() === 'Banner not found.' ? Http::STATUS_NOT_FOUND : Http::STATUS_BAD_REQUEST;
@@ -159,7 +174,6 @@ class BannerController extends Controller {
 
         return new DataResponse($banners);
     }
-
     /**
      * Merge form params with JSON body to support both content types.
      */
@@ -181,7 +195,7 @@ class BannerController extends Controller {
     }
 
     /**
-     * @return array{enabled: bool, message: string, messageTranslations: array<string, string>, variant: string, customBackground: string, customText: string, textAlignment: string, dismissible: bool, readMoreText: string, readMoreTextTranslations: array<string, string>, readMoreUrl: string, scheduleStart: string, scheduleEnd: string}
+     * @return array{enabled: bool, message: string, messageTranslations: array<string, string>, variant: string, customBackground: string, customText: string, textAlignment: string, dismissible: bool, readMoreText: string, readMoreTextTranslations: array<string, string>, readMoreUrl: string, scheduleStart: string, scheduleEnd: string, audienceTarget: string, audienceGroups: array<int, string>}
      */
     private function extractBannerPayload(array $payload): array {
         return [
@@ -198,6 +212,8 @@ class BannerController extends Controller {
             'readMoreUrl' => (string)($payload['readMoreUrl'] ?? ''),
             'scheduleStart' => (string)($payload['scheduleStart'] ?? ''),
             'scheduleEnd' => (string)($payload['scheduleEnd'] ?? ''),
+            'audienceTarget' => (string)($payload['audienceTarget'] ?? 'all'),
+            'audienceGroups' => $this->normalizeStringList($payload['audienceGroups'] ?? []),
         ];
     }
 
@@ -220,5 +236,71 @@ class BannerController extends Controller {
         }
 
         return $translations;
+    }
+
+    /**
+     * @param mixed $value
+     * @return array<int, string>
+     */
+    private function normalizeStringList(mixed $value): array {
+        if (is_string($value)) {
+            $decoded = json_decode($value, true);
+            if (is_array($decoded)) {
+                $value = $decoded;
+            } else {
+                $value = preg_split('/\r\n|\r|\n/', $value) ?: [];
+            }
+        }
+
+        if (!is_array($value)) {
+            return [];
+        }
+
+        $normalized = [];
+        foreach ($value as $entry) {
+            $item = trim((string)$entry);
+            if ($item === '') {
+                continue;
+            }
+
+            $normalized[] = $item;
+        }
+
+        return array_values(array_unique($normalized));
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function getViewerGroupIds(?IUser $user): array {
+        if (!$user instanceof IUser) {
+            return [];
+        }
+
+        $groupIds = [];
+        foreach ($this->groupManager->getUserGroups($user) as $group) {
+            if ($group === null) {
+                continue;
+            }
+
+            $gid = trim((string)$group->getGID());
+            if ($gid !== '') {
+                $groupIds[] = $gid;
+            }
+        }
+
+        return array_values(array_unique($groupIds));
+    }
+
+    private function isAdminUser(?IUser $user): bool {
+        if (!$user instanceof IUser) {
+            return false;
+        }
+
+        if (method_exists($this->groupManager, 'isAdmin')) {
+            return (bool)$this->groupManager->isAdmin($user->getUID());
+        }
+
+        return in_array('admin', $this->getViewerGroupIds($user), true);
     }
 }

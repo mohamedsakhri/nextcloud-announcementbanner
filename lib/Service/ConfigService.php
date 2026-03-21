@@ -7,6 +7,7 @@ namespace OCA\AnnouncementBanner\Service;
 use InvalidArgumentException;
 use OCA\AnnouncementBanner\AppInfo\Application;
 use OCP\IConfig;
+use OCP\IGroupManager;
 
 class ConfigService {
     private const KEY_BANNERS = 'banners';
@@ -34,9 +35,14 @@ class ConfigService {
      * @var string[]
      */
     private array $allowedTextAlignments = ['left', 'center', 'right'];
+    /**
+     * @var string[]
+     */
+    private array $allowedAudienceTargets = ['all', 'admins', 'groups'];
 
     public function __construct(
         private IConfig $config,
+        private IGroupManager $groupManager,
     ) {
     }
 
@@ -98,6 +104,8 @@ class ConfigService {
         string $readMoreUrl,
         string $scheduleStart,
         string $scheduleEnd,
+        string $audienceTarget,
+        array $audienceGroups,
     ): array {
         $banners = $this->getBanners();
         $now = $this->getNow();
@@ -119,6 +127,8 @@ class ConfigService {
             $readMoreUrl,
             $scheduleStart,
             $scheduleEnd,
+            $audienceTarget,
+            $audienceGroups,
             $now,
         );
         $banners[] = $banner;
@@ -145,6 +155,8 @@ class ConfigService {
         string $readMoreUrl,
         string $scheduleStart,
         string $scheduleEnd,
+        string $audienceTarget,
+        array $audienceGroups,
     ): array {
         $banners = $this->getBanners();
         $updated = null;
@@ -170,6 +182,8 @@ class ConfigService {
                 $readMoreUrl,
                 $scheduleStart,
                 $scheduleEnd,
+                $audienceTarget,
+                $audienceGroups,
                 $now,
             );
             $banners[$index] = $updated;
@@ -258,18 +272,47 @@ class ConfigService {
     /**
      * @return array<int, array<string, mixed>>
      */
-    public function getPublicBanners(): array {
+    public function getPublicBanners(?string $viewerUid = null, bool $isAdmin = false, array $viewerGroupIds = []): array {
         $banners = [];
         foreach ($this->getBanners() as $banner) {
             if (empty($banner['enabled']) || empty($banner['message'])) {
                 continue;
             }
 
+            if (!$this->matchesAudience($banner, $viewerUid, $isAdmin, $viewerGroupIds)) {
+                continue;
+            }
+
             $banner['dismissKey'] = $this->getDismissKey($banner);
+            unset($banner['audienceGroups'], $banner['audienceTarget'], $banner['createdAt'], $banner['updatedAt']);
             $banners[] = $banner;
         }
 
         return $banners;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function getAvailableGroups(): array {
+        $groups = [];
+        foreach ($this->groupManager->search('') as $group) {
+            if ($group === null) {
+                continue;
+            }
+
+            $gid = trim((string)$group->getGID());
+            if ($gid === '') {
+                continue;
+            }
+
+            $name = method_exists($group, 'getDisplayName') ? (string)$group->getDisplayName() : '';
+            $groups[$gid] = trim($name) !== '' ? trim($name) : $gid;
+        }
+
+        natcasesort($groups);
+
+        return $groups;
     }
 
     public function getDismissKey(?array $banner = null): string {
@@ -287,6 +330,8 @@ class ConfigService {
         $readMoreUrl = $banner['readMoreUrl'] ?? '';
         $scheduleStart = $banner['scheduleStart'] ?? '';
         $scheduleEnd = $banner['scheduleEnd'] ?? '';
+        $audienceTarget = $banner['audienceTarget'] ?? 'all';
+        $audienceGroups = $banner['audienceGroups'] ?? [];
         $enabled = $banner['enabled'] ?? false;
         $dismissible = $banner['dismissible'] ?? false;
 
@@ -303,6 +348,8 @@ class ConfigService {
             $readMoreUrl,
             $scheduleStart,
             $scheduleEnd,
+            $audienceTarget,
+            is_array($audienceGroups) ? implode(',', $this->normalizeStringList($audienceGroups)) : '',
             $enabled ? '1' : '0',
             $dismissible ? '1' : '0',
         ]));
@@ -327,6 +374,8 @@ class ConfigService {
             'readMoreUrl' => '',
             'scheduleStart' => '',
             'scheduleEnd' => '',
+            'audienceTarget' => 'all',
+            'audienceGroups' => [],
         ];
     }
 
@@ -376,6 +425,8 @@ class ConfigService {
         string $readMoreUrl,
         string $scheduleStart,
         string $scheduleEnd,
+        string $audienceTarget,
+        array $audienceGroups,
         string $updatedAt,
     ): array {
         $message = trim($message);
@@ -389,6 +440,8 @@ class ConfigService {
         $readMoreUrl = trim($readMoreUrl);
         $scheduleStart = $this->normalizeScheduleValue($scheduleStart);
         $scheduleEnd = $this->normalizeScheduleValue($scheduleEnd);
+        $audienceTarget = $this->normalizeAudienceTarget($audienceTarget);
+        $audienceGroups = $this->normalizeStringList($audienceGroups);
 
         if ($scheduleStart !== '' && $scheduleEnd !== '') {
             $startTime = new \DateTimeImmutable($scheduleStart);
@@ -400,6 +453,10 @@ class ConfigService {
 
         if ($enabled && $message === '') {
             throw new InvalidArgumentException('Message is required when the banner is enabled.');
+        }
+
+        if ($audienceTarget === 'groups' && $audienceGroups === []) {
+            throw new InvalidArgumentException('Select at least one group when group targeting is enabled.');
         }
 
         return [
@@ -417,6 +474,8 @@ class ConfigService {
             'readMoreUrl' => $readMoreUrl,
             'scheduleStart' => $scheduleStart,
             'scheduleEnd' => $scheduleEnd,
+            'audienceTarget' => $audienceTarget,
+            'audienceGroups' => $audienceGroups,
             'createdAt' => (string)($seed['createdAt'] ?? $updatedAt),
             'updatedAt' => $updatedAt,
         ];
@@ -488,6 +547,8 @@ class ConfigService {
             'readMoreUrl' => trim((string)($banner['readMoreUrl'] ?? '')),
             'scheduleStart' => $this->normalizeStoredScheduleValue((string)($banner['scheduleStart'] ?? '')),
             'scheduleEnd' => $this->normalizeStoredScheduleValue((string)($banner['scheduleEnd'] ?? '')),
+            'audienceTarget' => $this->normalizeAudienceTarget((string)($banner['audienceTarget'] ?? 'all')),
+            'audienceGroups' => $this->normalizeStringList(is_array($banner['audienceGroups'] ?? null) ? $banner['audienceGroups'] : []),
             'createdAt' => (string)($banner['createdAt'] ?? $this->getNow()),
             'updatedAt' => (string)($banner['updatedAt'] ?? $this->getNow()),
         ];
@@ -535,6 +596,8 @@ class ConfigService {
             $legacyReadMoreUrl,
             $legacyScheduleStart,
             $legacyScheduleEnd,
+            'all',
+            [],
             $now,
         );
 
@@ -572,6 +635,15 @@ class ConfigService {
         }
 
         return $alignment;
+    }
+
+    private function normalizeAudienceTarget(string $target): string {
+        $target = strtolower(trim($target));
+        if (!in_array($target, $this->allowedAudienceTargets, true)) {
+            return 'all';
+        }
+
+        return $target;
     }
 
     /**
@@ -621,6 +693,56 @@ class ConfigService {
         ksort($normalized);
 
         return $normalized;
+    }
+
+    /**
+     * @param array<int, mixed> $values
+     * @return array<int, string>
+     */
+    private function normalizeStringList(array $values): array {
+        $normalized = [];
+
+        foreach ($values as $value) {
+            $item = trim((string)$value);
+            if ($item === '') {
+                continue;
+            }
+
+            $normalized[] = $item;
+        }
+
+        $normalized = array_values(array_unique($normalized));
+        natcasesort($normalized);
+
+        return array_values($normalized);
+    }
+
+    /**
+     * @param array<int, string> $viewerGroupIds
+     */
+    private function matchesAudience(array $banner, ?string $viewerUid, bool $isAdmin, array $viewerGroupIds): bool {
+        $audienceTarget = $this->normalizeAudienceTarget((string)($banner['audienceTarget'] ?? 'all'));
+
+        if ($audienceTarget === 'admins') {
+            return $isAdmin;
+        }
+
+        if ($audienceTarget !== 'groups') {
+            return true;
+        }
+
+        if ($viewerUid === null || $viewerUid === '') {
+            return false;
+        }
+
+        $bannerGroups = $this->normalizeStringList(is_array($banner['audienceGroups'] ?? null) ? $banner['audienceGroups'] : []);
+        if ($bannerGroups === []) {
+            return false;
+        }
+
+        $viewerGroups = array_map('strval', $viewerGroupIds);
+
+        return array_intersect($bannerGroups, $viewerGroups) !== [];
     }
 
     private function normalizeScheduleValue(string $value): string {
