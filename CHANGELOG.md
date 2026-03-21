@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2.3.0
+
+- Add audience targeting for banners: everyone, admins only, or specific groups.
+- Show the selected audience in the admin overview for easier management.
+- Add validation for group-targeted banners so at least one group must be selected.
+
+## 2.2.1
+
+- Fix link to screenshot
+
 ## 2.2.0
 
 - Add manual banner ordering in the admin overview with up/down controls.
