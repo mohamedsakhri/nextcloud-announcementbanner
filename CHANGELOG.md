@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2.3.1
+
+- Update screenshots with new features
+
 ## 2.3.0
 
 - Add audience targeting for banners: everyone, admins only, or specific groups.
