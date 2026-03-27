@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2.4.0
+
+- Add page targeting for banners so they can be shown only on selected apps.
+- Add app and settings page selection in the admin form, including personal settings and administration settings.
+- Show the selected app/page targets in the admin overview for easier management.
+- Update public banner rendering to detect settings pages and apply page-targeted banners there.
+
 ## 2.3.1
 
 - Update screenshots with new features

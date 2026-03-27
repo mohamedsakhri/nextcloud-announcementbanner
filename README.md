@@ -1,6 +1,6 @@
 # Announcement Banner App
 
-The Announcement Banner App adds customizable notification bars at the top of every Nextcloud page. Create multiple banners with their own message, color scheme, schedule window, audience, app scope, optional “read more” link, and dismiss behavior. You can also add translations so users see the banner in their language. A live preview and an overview of all banners are available in the admin settings.
+The Announcement Banner App adds customizable notification bars at the top of your Nextcloud pages. Create multiple banners with their own message, color scheme, schedule window, audience, page targeting, optional “read more” link, and dismiss behavior. You can also add translations so users see the banner in their language. A live preview and an overview of all banners are available in the admin settings.
 
 ## Screenshots
 
@@ -43,7 +43,7 @@ The Announcement Banner App adds customizable notification bars at the top of ev
 - Manual banner ordering with up/down controls in the admin overview to define the display order when multiple banners are active.
 - Optional schedule: set a start time, an end time, or both to control when a banner is shown.
 - Audience targeting: show each banner to everyone, admins only, or specific groups.
-- App targeting: limit a banner to specific Nextcloud app IDs such as `files`, `deck`, or `mail`.
+- Page targeting: limit a banner to specific Nextcloud apps and settings pages such as `files`, `deck`, `settings` (personal settings), or `admin_settings` (administration settings).
 - Theme variants: info, success, warning, danger, custom.
 - Optional dismiss button for users.
 - Optional “read more” link with customizable label and URL.
@@ -59,6 +59,10 @@ Create and manage several banners at once. Each banner can be enabled or disable
 ## Audience
 
 Choose who should see each banner. You can publish a banner to everyone, restrict it to admins only, or target specific groups.
+
+## Page Targeting
+
+Choose where each banner should appear. You can leave the page selection empty to show a banner everywhere, or restrict it to selected apps and settings areas such as Files, Deck, Personal settings, or Administration settings.
 
 ## Translations
 
@@ -92,6 +96,6 @@ Install from the Nextcloud App Store: [Announcement Banner](https://apps.nextclo
 - **Read more**: Optional label + URL (shown inline with an arrow icon).
 - **Schedule**: Optional start date, end date, or both. Make sure to enable the banner if you want to schedule it.
 - **Audience**: Everyone, Admins only, or Specific groups.
-- **App IDs**: Optional list of Nextcloud app IDs. Leave empty to show the banner everywhere, or target apps like `files`, `deck`, or `mail`.
+- **Apps**: Optional selection of target pages. Leave empty to show the banner everywhere, or target entries like Files, Deck, Personal settings (`settings`), or Administration settings (`admin_settings`).
 - **Translations**: Optional per-language overrides for message and read-more label; default text is the fallback.
 - Live preview updates immediately; saving publishes to all users.
