@@ -40,6 +40,10 @@ class ConfigService {
      * @var string[]
      */
     private array $allowedAudienceTargets = ['all', 'admins', 'groups'];
+    /**
+     * @var string[]
+     */
+    private array $allowedTargetAppModes = ['all', 'only', 'exclude'];
 
     public function __construct(
         private IConfig $config,
@@ -108,6 +112,7 @@ class ConfigService {
         string $scheduleEnd,
         string $audienceTarget,
         array $audienceGroups,
+        string $targetAppMode,
         array $targetApps,
     ): array {
         $banners = $this->getBanners();
@@ -132,6 +137,7 @@ class ConfigService {
             $scheduleEnd,
             $audienceTarget,
             $audienceGroups,
+            $targetAppMode,
             $targetApps,
             $now,
         );
@@ -161,6 +167,7 @@ class ConfigService {
         string $scheduleEnd,
         string $audienceTarget,
         array $audienceGroups,
+        string $targetAppMode,
         array $targetApps,
     ): array {
         $banners = $this->getBanners();
@@ -189,6 +196,7 @@ class ConfigService {
                 $scheduleEnd,
                 $audienceTarget,
                 $audienceGroups,
+                $targetAppMode,
                 $targetApps,
                 $now,
             );
@@ -294,7 +302,7 @@ class ConfigService {
             }
 
             $banner['dismissKey'] = $this->getDismissKey($banner);
-            unset($banner['audienceGroups'], $banner['audienceTarget'], $banner['targetApps'], $banner['createdAt'], $banner['updatedAt']);
+            unset($banner['audienceGroups'], $banner['audienceTarget'], $banner['targetAppMode'], $banner['targetApps'], $banner['createdAt'], $banner['updatedAt']);
             $banners[] = $banner;
         }
 
@@ -399,6 +407,7 @@ class ConfigService {
         $scheduleEnd = $banner['scheduleEnd'] ?? '';
         $audienceTarget = $banner['audienceTarget'] ?? 'all';
         $audienceGroups = $banner['audienceGroups'] ?? [];
+        $targetAppMode = $banner['targetAppMode'] ?? 'all';
         $targetApps = $banner['targetApps'] ?? [];
         $enabled = $banner['enabled'] ?? false;
         $dismissible = $banner['dismissible'] ?? false;
@@ -418,6 +427,7 @@ class ConfigService {
             $scheduleEnd,
             $audienceTarget,
             is_array($audienceGroups) ? implode(',', $this->normalizeStringList($audienceGroups)) : '',
+            $this->normalizeTargetAppMode((string)$targetAppMode),
             is_array($targetApps) ? implode(',', $this->normalizeAppIds($targetApps)) : '',
             $enabled ? '1' : '0',
             $dismissible ? '1' : '0',
@@ -445,6 +455,7 @@ class ConfigService {
             'scheduleEnd' => '',
             'audienceTarget' => 'all',
             'audienceGroups' => [],
+            'targetAppMode' => 'all',
             'targetApps' => [],
         ];
     }
@@ -497,6 +508,7 @@ class ConfigService {
         string $scheduleEnd,
         string $audienceTarget,
         array $audienceGroups,
+        string $targetAppMode,
         array $targetApps,
         string $updatedAt,
     ): array {
@@ -513,6 +525,7 @@ class ConfigService {
         $scheduleEnd = $this->normalizeScheduleValue($scheduleEnd);
         $audienceTarget = $this->normalizeAudienceTarget($audienceTarget);
         $audienceGroups = $this->normalizeStringList($audienceGroups);
+        $targetAppMode = $this->normalizeTargetAppMode($targetAppMode);
         $targetApps = $this->normalizeAppIds($targetApps);
 
         if ($scheduleStart !== '' && $scheduleEnd !== '') {
@@ -529,6 +542,10 @@ class ConfigService {
 
         if ($audienceTarget === 'groups' && $audienceGroups === []) {
             throw new InvalidArgumentException('Select at least one group when group targeting is enabled.');
+        }
+
+        if ($targetAppMode !== 'all' && $targetApps === []) {
+            throw new InvalidArgumentException('Select at least one page when page targeting is enabled.');
         }
 
         return [
@@ -548,6 +565,7 @@ class ConfigService {
             'scheduleEnd' => $scheduleEnd,
             'audienceTarget' => $audienceTarget,
             'audienceGroups' => $audienceGroups,
+            'targetAppMode' => $targetAppMode,
             'targetApps' => $targetApps,
             'createdAt' => (string)($seed['createdAt'] ?? $updatedAt),
             'updatedAt' => $updatedAt,
@@ -622,6 +640,7 @@ class ConfigService {
             'scheduleEnd' => $this->normalizeStoredScheduleValue((string)($banner['scheduleEnd'] ?? '')),
             'audienceTarget' => $this->normalizeAudienceTarget((string)($banner['audienceTarget'] ?? 'all')),
             'audienceGroups' => $this->normalizeStringList(is_array($banner['audienceGroups'] ?? null) ? $banner['audienceGroups'] : []),
+            'targetAppMode' => $this->normalizeTargetAppMode((string)($banner['targetAppMode'] ?? 'all')),
             'targetApps' => $this->normalizeAppIds(is_array($banner['targetApps'] ?? null) ? $banner['targetApps'] : []),
             'createdAt' => (string)($banner['createdAt'] ?? $this->getNow()),
             'updatedAt' => (string)($banner['updatedAt'] ?? $this->getNow()),
@@ -672,6 +691,7 @@ class ConfigService {
             $legacyScheduleEnd,
             'all',
             [],
+            'all',
             [],
             $now,
         );
@@ -719,6 +739,15 @@ class ConfigService {
         }
 
         return $target;
+    }
+
+    private function normalizeTargetAppMode(string $mode): string {
+        $mode = strtolower(trim($mode));
+        if (!in_array($mode, $this->allowedTargetAppModes, true)) {
+            return 'all';
+        }
+
+        return $mode;
     }
 
     /**
@@ -853,8 +882,9 @@ class ConfigService {
     }
 
     private function matchesTargetApps(array $banner, string $currentAppId): bool {
+        $targetAppMode = $this->normalizeTargetAppMode((string)($banner['targetAppMode'] ?? 'all'));
         $targetApps = $this->normalizeAppIds(is_array($banner['targetApps'] ?? null) ? $banner['targetApps'] : []);
-        if ($targetApps === []) {
+        if ($targetAppMode === 'all' || $targetApps === []) {
             return true;
         }
 
@@ -863,7 +893,13 @@ class ConfigService {
             return false;
         }
 
-        return in_array($normalizedCurrentAppId, $targetApps, true);
+        $isSelected = in_array($normalizedCurrentAppId, $targetApps, true);
+
+        if ($targetAppMode === 'exclude') {
+            return !$isSelected;
+        }
+
+        return $isSelected;
     }
 
     private function normalizeScheduleValue(string $value): string {

@@ -2,7 +2,13 @@
 /** @var array $_ */
 $settings = $_['settings'];
 ?>
-<div id="announcementbanner-admin" class="section">
+<div
+	id="announcementbanner-admin"
+	class="section"
+	data-all-pages-label="<?php p($_['labels']['allApps']); ?>"
+	data-only-pages-label="<?php p($_['labels']['pageTargetingOnly']); ?>"
+	data-exclude-pages-label="<?php p($_['labels']['pageTargetingExclude']); ?>"
+>
 	<h2><?php p($_['title']); ?></h2>
 
 	<div class="announcementbanner-overview">
@@ -268,11 +274,26 @@ $settings = $_['settings'];
 				</div>
 
 				<div class="announcementbanner-field">
-					<label class="announcementbanner-field__label" for="announcementbanner-target-apps">
-						<?php p($_['labels']['appTargets']); ?>
+					<label class="announcementbanner-field__label" for="announcementbanner-target-app-mode">
+						<?php p($_['labels']['pageTargeting']); ?>
 					</label>
 					<div class="announcementbanner-field__control">
-						<div class="announcementbanner-multiselect announcementbanner-target-apps">
+						<select id="announcementbanner-target-app-mode" name="targetAppMode" class="announcementbanner-input">
+							<option value="all" <?php if (($settings['targetAppMode'] ?? 'all') === 'all') { print_unescaped('selected'); } ?>>
+								<?php p($_['labels']['pageTargetingAll']); ?>
+							</option>
+							<option value="only" <?php if (($settings['targetAppMode'] ?? 'all') === 'only') { print_unescaped('selected'); } ?>>
+								<?php p($_['labels']['pageTargetingOnly']); ?>
+							</option>
+							<option value="exclude" <?php if (($settings['targetAppMode'] ?? 'all') === 'exclude') { print_unescaped('selected'); } ?>>
+								<?php p($_['labels']['pageTargetingExclude']); ?>
+							</option>
+						</select>
+						<div
+							class="announcementbanner-multiselect announcementbanner-target-apps"
+							data-announcementbanner-target-apps
+							<?php if (($settings['targetAppMode'] ?? 'all') === 'all') { print_unescaped('hidden'); } ?>
+						>
 							<label for="announcementbanner-target-apps" class="announcementbanner-subfield-label">
 								<?php p($_['labels']['appTargetsHelp']); ?>
 							</label>

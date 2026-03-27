@@ -18,6 +18,7 @@
 		scheduleEnd: '',
 		audienceTarget: 'all',
 		audienceGroups: [],
+		targetAppMode: 'all',
 		targetApps: [],
 	};
 
@@ -83,6 +84,7 @@
 			scheduleEnd: toIsoDateTime(formData.get('scheduleEnd') ?? ''),
 			audienceTarget: (formData.get('audienceTarget') ?? 'all').toString(),
 			audienceGroups: readSelectValues(audienceGroupsInput),
+			targetAppMode: (formData.get('targetAppMode') ?? 'all').toString(),
 			targetApps: readSelectValues(form.querySelector('#announcementbanner-target-apps')),
 			messageTranslations: collectTranslations('message'),
 			readMoreTextTranslations: collectTranslations('readMoreText'),
@@ -638,7 +640,9 @@
 		const audienceTargetInput = form.querySelector('#announcementbanner-audience-target');
 		const audienceGroupsInput = form.querySelector('#announcementbanner-audience-groups');
 		const audienceGroupsWrapper = form.querySelector('[data-announcementbanner-target-groups]');
+		const targetAppModeInput = form.querySelector('#announcementbanner-target-app-mode');
 		const targetAppsInput = form.querySelector('#announcementbanner-target-apps');
+		const targetAppsWrapper = form.querySelector('[data-announcementbanner-target-apps]');
 		const availableGroupLabels = audienceGroupsInput
 			? Array.from(audienceGroupsInput.options).reduce((map, option) => {
 				map[option.value] = option.textContent?.trim() || option.value;
@@ -678,7 +682,9 @@
 			audienceAll: t(APP_ID, 'Everyone'),
 			audienceAdmins: t(APP_ID, 'Admins only'),
 			audienceGroups: t(APP_ID, 'Specific groups'),
-			allApps: t(APP_ID, 'All apps'),
+			allApps: root.dataset.allPagesLabel || t(APP_ID, 'All pages'),
+			onlySelectedPages: root.dataset.onlyPagesLabel || t(APP_ID, 'Show only on selected pages'),
+			allExceptSelectedPages: root.dataset.excludePagesLabel || t(APP_ID, 'Show everywhere except selected pages'),
 		};
 
 		initTranslationControls();
@@ -731,6 +737,9 @@
 				syncMultiSelectPicker(audienceGroupsInput);
 			}
 			if (targetAppsInput) {
+				if (targetAppModeInput) {
+					targetAppModeInput.value = banner.targetAppMode || 'all';
+				}
 				const selectedApps = Array.isArray(banner.targetApps) ? banner.targetApps : [];
 				Array.from(targetAppsInput.options).forEach((option) => {
 					option.selected = selectedApps.includes(option.value);
@@ -760,6 +769,7 @@
 			renderTranslations('message', banner.messageTranslations || {});
 			renderTranslations('readMoreText', banner.readMoreTextTranslations || {});
 			toggleAudienceGroups();
+			toggleTargetApps();
 			toggleCustomColors();
 			updatePageBanner(serializeForm(form), previewContainer);
 		}
@@ -770,6 +780,14 @@
 			}
 
 			audienceGroupsWrapper.hidden = audienceTargetInput.value !== 'groups';
+		}
+
+		function toggleTargetApps() {
+			if (!targetAppsWrapper || !targetAppModeInput) {
+				return;
+			}
+
+			targetAppsWrapper.hidden = targetAppModeInput.value === 'all';
 		}
 
 		function toggleCustomColors() {
@@ -825,13 +843,65 @@
 			return labels.audienceAll;
 		}
 
-		function formatTargetAppsSummary(banner) {
+		function getTargetAppsSummary(banner) {
+			const targetAppMode = banner?.targetAppMode || 'all';
 			const targetApps = normalizeSelection(banner?.targetApps || []);
-			if (targetApps.length === 0) {
-				return labels.allApps;
+			if (targetAppMode === 'all' || targetApps.length === 0) {
+				return {
+					mode: 'all',
+					text: labels.allApps,
+				};
 			}
 
-			return targetApps.map((appId) => availableAppLabels[appId] || appId).join(', ');
+			const text = targetApps.map((appId) => {
+				const label = availableAppLabels[appId] || appId;
+				const suffix = ` (${appId})`;
+				if (label !== appId && label.endsWith(suffix)) {
+					return label.slice(0, -suffix.length);
+				}
+
+				return label;
+			}).join(', ');
+
+			return {
+				mode: targetAppMode === 'exclude' ? 'exclude' : 'only',
+				text,
+			};
+		}
+
+		function renderTargetAppsSummary(banner) {
+			const summary = getTargetAppsSummary(banner);
+			const content = document.createElement('span');
+			content.className = 'announcementbanner-target-summary';
+
+			if (summary.mode === 'all') {
+				content.textContent = summary.text;
+				content.title = summary.text;
+				return content;
+			}
+
+			const modeLabel = summary.mode === 'exclude'
+				? labels.allExceptSelectedPages
+				: labels.onlySelectedPages;
+			content.title = `${modeLabel}: ${summary.text}`;
+
+			const assistiveText = document.createElement('span');
+			assistiveText.className = 'announcementbanner-visually-hidden';
+			assistiveText.textContent = `${modeLabel}: `;
+
+			const badge = document.createElement('span');
+			badge.className = `announcementbanner-target-summary__badge announcementbanner-target-summary__badge--${summary.mode}`;
+			badge.setAttribute('aria-hidden', 'true');
+			badge.textContent = summary.mode === 'exclude' ? '\u2212' : '+';
+
+			const text = document.createElement('span');
+			text.className = 'announcementbanner-target-summary__text';
+			text.textContent = summary.text;
+
+			content.appendChild(assistiveText);
+			content.appendChild(badge);
+			content.appendChild(text);
+			return content;
 		}
 
 		async function persistBannerOrder(nextBanners) {
@@ -915,7 +985,7 @@
 
 			const appsCell = document.createElement('div');
 			appsCell.className = 'announcementbanner-overview__apps';
-			appsCell.textContent = formatTargetAppsSummary(banner);
+			appsCell.appendChild(renderTargetAppsSummary(banner));
 
 			const startCell = document.createElement('div');
 			startCell.textContent = formatDateTime(banner.scheduleStart);
@@ -1065,6 +1135,13 @@
 			});
 		}
 
+		if (targetAppModeInput) {
+			targetAppModeInput.addEventListener('change', () => {
+				toggleTargetApps();
+				updatePageBanner(serializeForm(form), previewContainer);
+			});
+		}
+
 		if (textAlignmentInput) {
 			textAlignmentInput.addEventListener('change', () => updatePageBanner(serializeForm(form), previewContainer));
 		}
@@ -1082,6 +1159,10 @@
 			}
 			el.addEventListener('input', () => updatePageBanner(serializeForm(form), previewContainer));
 		});
+
+		if (targetAppsInput) {
+			targetAppsInput.addEventListener('change', () => updatePageBanner(serializeForm(form), previewContainer));
+		}
 
 		if (audienceGroupsInput) {
 			audienceGroupsInput.addEventListener('change', () => updatePageBanner(serializeForm(form), previewContainer));

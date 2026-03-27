@@ -109,6 +109,57 @@
 	overflow-wrap: anywhere;
 }
 
+.announcementbanner-target-summary {
+	display: inline-flex;
+	align-items: flex-start;
+	gap: 8px;
+	min-width: 0;
+}
+
+.announcementbanner-target-summary__badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 auto;
+	width: 18px;
+	height: 18px;
+	border-radius: 999px;
+	border: 1px solid var(--color-border);
+	font-size: 13px;
+	font-weight: 700;
+	line-height: 1;
+	margin-top: 1px;
+}
+
+.announcementbanner-target-summary__badge--only {
+	background: color-mix(in srgb, var(--color-success, #2ecc71) 12%, transparent);
+	color: var(--color-success-text, var(--color-success, #2ecc71));
+	border-color: color-mix(in srgb, var(--color-success, #2ecc71) 35%, var(--color-border));
+}
+
+.announcementbanner-target-summary__badge--exclude {
+	background: color-mix(in srgb, var(--color-error, #e74c3c) 12%, transparent);
+	color: var(--color-error-text, var(--color-error, #e74c3c));
+	border-color: color-mix(in srgb, var(--color-error, #e74c3c) 35%, var(--color-border));
+}
+
+.announcementbanner-target-summary__text {
+	min-width: 0;
+	overflow-wrap: anywhere;
+}
+
+.announcementbanner-visually-hidden {
+	position: absolute !important;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
 .announcementbanner-overview__empty {
 	padding: 18px;
 	border: 1px dashed var(--color-border);

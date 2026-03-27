@@ -85,6 +85,7 @@ class BannerController extends Controller {
                 $data['scheduleEnd'],
                 $data['audienceTarget'],
                 $data['audienceGroups'],
+                $data['targetAppMode'],
                 $data['targetApps'],
             );
         } catch (InvalidArgumentException $e) {
@@ -121,6 +122,7 @@ class BannerController extends Controller {
                 $data['scheduleEnd'],
                 $data['audienceTarget'],
                 $data['audienceGroups'],
+                $data['targetAppMode'],
                 $data['targetApps'],
             );
         } catch (InvalidArgumentException $e) {
@@ -199,7 +201,7 @@ class BannerController extends Controller {
     }
 
     /**
-     * @return array{enabled: bool, message: string, messageTranslations: array<string, string>, variant: string, customBackground: string, customText: string, textAlignment: string, dismissible: bool, readMoreText: string, readMoreTextTranslations: array<string, string>, readMoreUrl: string, scheduleStart: string, scheduleEnd: string, audienceTarget: string, audienceGroups: array<int, string>, targetApps: array<int, string>}
+     * @return array{enabled: bool, message: string, messageTranslations: array<string, string>, variant: string, customBackground: string, customText: string, textAlignment: string, dismissible: bool, readMoreText: string, readMoreTextTranslations: array<string, string>, readMoreUrl: string, scheduleStart: string, scheduleEnd: string, audienceTarget: string, audienceGroups: array<int, string>, targetAppMode: string, targetApps: array<int, string>}
      */
     private function extractBannerPayload(array $payload): array {
         return [
@@ -218,6 +220,7 @@ class BannerController extends Controller {
             'scheduleEnd' => (string)($payload['scheduleEnd'] ?? ''),
             'audienceTarget' => (string)($payload['audienceTarget'] ?? 'all'),
             'audienceGroups' => $this->normalizeStringList($payload['audienceGroups'] ?? []),
+            'targetAppMode' => (string)($payload['targetAppMode'] ?? 'all'),
             'targetApps' => $this->normalizeStringList($payload['targetApps'] ?? []),
         ];
     }
