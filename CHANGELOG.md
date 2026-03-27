@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2.4.1
+
+- Add page visibility modes for banners: show everywhere, show only on selected pages, or show everywhere except selected pages.
+- Refine the admin UI wording and overview display for page visibility targeting.
+- Extend translations for the new page visibility settings across bundled languages.
+
 ## 2.4.0
 
 - Add page targeting for banners so they can be shown only on selected apps.
