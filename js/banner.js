@@ -270,6 +270,20 @@
 	let bodyHeightElement = null;
 	let adjustedBodyHeight = null;
 
+	function notifyViewportChange() {
+		if (typeof window === 'undefined' || typeof window.dispatchEvent !== 'function') {
+			return;
+		}
+
+		const emitResize = () => window.dispatchEvent(new Event('resize'));
+		if (typeof window.requestAnimationFrame === 'function') {
+			window.requestAnimationFrame(emitResize);
+			return;
+		}
+
+		setTimeout(emitResize, 0);
+	}
+
 	function adjustBodyHeight(bannerHeight) {
 		const body = document.body;
 		const root = document.documentElement;
@@ -299,12 +313,14 @@
 
 			adjustedBodyHeight = `calc(${originalBodyHeight} - ${bannerHeight}px)`;
 			bodyHeightElement.style.setProperty('--body-height', adjustedBodyHeight);
+			notifyViewportChange();
 		} else if (bannerHeight === 0 && originalBodyHeight !== null && bodyHeightElement) {
 			// Reset to original height when banner is removed
 			bodyHeightElement.style.setProperty('--body-height', originalBodyHeight);
 			originalBodyHeight = null;
 			adjustedBodyHeight = null;
 			bodyHeightElement = null;
+			notifyViewportChange();
 		}
 	}
 
