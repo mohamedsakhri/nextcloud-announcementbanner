@@ -249,7 +249,7 @@ $settings = $_['settings'];
 							</option>
 						</select>
 						<div
-							class="announcementbanner-target-groups"
+							class="announcementbanner-multiselect announcementbanner-target-groups"
 							data-announcementbanner-target-groups
 							<?php if (($settings['audienceTarget'] ?? 'all') !== 'groups') { print_unescaped('hidden'); } ?>
 						>
