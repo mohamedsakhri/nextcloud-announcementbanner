@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use OCA\AnnouncementBanner\AppInfo\Application;
 use OCP\IConfig;
 use OCP\IGroupManager;
+use OCP\INavigationManager;
 
 class ConfigService {
     private const KEY_BANNERS = 'banners';
@@ -43,6 +44,7 @@ class ConfigService {
     public function __construct(
         private IConfig $config,
         private IGroupManager $groupManager,
+        private INavigationManager $navigationManager,
     ) {
     }
 
@@ -106,6 +108,7 @@ class ConfigService {
         string $scheduleEnd,
         string $audienceTarget,
         array $audienceGroups,
+        array $targetApps,
     ): array {
         $banners = $this->getBanners();
         $now = $this->getNow();
@@ -129,6 +132,7 @@ class ConfigService {
             $scheduleEnd,
             $audienceTarget,
             $audienceGroups,
+            $targetApps,
             $now,
         );
         $banners[] = $banner;
@@ -157,6 +161,7 @@ class ConfigService {
         string $scheduleEnd,
         string $audienceTarget,
         array $audienceGroups,
+        array $targetApps,
     ): array {
         $banners = $this->getBanners();
         $updated = null;
@@ -184,6 +189,7 @@ class ConfigService {
                 $scheduleEnd,
                 $audienceTarget,
                 $audienceGroups,
+                $targetApps,
                 $now,
             );
             $banners[$index] = $updated;
@@ -272,7 +278,7 @@ class ConfigService {
     /**
      * @return array<int, array<string, mixed>>
      */
-    public function getPublicBanners(?string $viewerUid = null, bool $isAdmin = false, array $viewerGroupIds = []): array {
+    public function getPublicBanners(?string $viewerUid = null, bool $isAdmin = false, array $viewerGroupIds = [], string $currentAppId = ''): array {
         $banners = [];
         foreach ($this->getBanners() as $banner) {
             if (empty($banner['enabled']) || empty($banner['message'])) {
@@ -283,8 +289,12 @@ class ConfigService {
                 continue;
             }
 
+            if (!$this->matchesTargetApps($banner, $currentAppId)) {
+                continue;
+            }
+
             $banner['dismissKey'] = $this->getDismissKey($banner);
-            unset($banner['audienceGroups'], $banner['audienceTarget'], $banner['createdAt'], $banner['updatedAt']);
+            unset($banner['audienceGroups'], $banner['audienceTarget'], $banner['targetApps'], $banner['createdAt'], $banner['updatedAt']);
             $banners[] = $banner;
         }
 
@@ -315,6 +325,63 @@ class ConfigService {
         return $groups;
     }
 
+    /**
+     * @return array<string, string>
+     */
+    public function getAvailableApps(): array {
+        $apps = [];
+        $entries = $this->navigationManager->getAll(INavigationManager::TYPE_APPS);
+        foreach ($entries as $entry) {
+            $this->addNavigationEntryToAppList($apps, $entry);
+        }
+
+        $settingsEntries = $this->navigationManager->getAll(INavigationManager::TYPE_SETTINGS);
+        foreach ($settingsEntries as $entry) {
+            if (!is_array($entry)) {
+                continue;
+            }
+
+            $entryId = $this->normalizeAppId((string)($entry['id'] ?? ''));
+            if ($entryId !== 'settings' && $entryId !== 'admin_settings') {
+                continue;
+            }
+
+            $this->addNavigationEntryToAppList($apps, $entry, $entryId);
+        }
+
+        natcasesort($apps);
+
+        return $apps;
+    }
+
+    /**
+     * @param array<string, string> $apps
+     */
+    private function addNavigationEntryToAppList(array &$apps, mixed $entry, ?string $fallbackId = null): void {
+        if (!is_array($entry)) {
+            return;
+        }
+
+        $appId = (string)($entry['app'] ?? $entry['id'] ?? $fallbackId ?? '');
+        $normalizedAppId = $this->normalizeAppId($appId);
+        if ($normalizedAppId === '') {
+            return;
+        }
+
+        if (isset($apps[$normalizedAppId])) {
+            return;
+        }
+
+        $label = trim((string)($entry['name'] ?? ''));
+        if ($label === '') {
+            $label = $normalizedAppId;
+        } elseif ($label !== $normalizedAppId) {
+            $label = sprintf('%s (%s)', $label, $normalizedAppId);
+        }
+
+        $apps[$normalizedAppId] = $label;
+    }
+
     public function getDismissKey(?array $banner = null): string {
         $banner = $banner ?? [];
 
@@ -332,6 +399,7 @@ class ConfigService {
         $scheduleEnd = $banner['scheduleEnd'] ?? '';
         $audienceTarget = $banner['audienceTarget'] ?? 'all';
         $audienceGroups = $banner['audienceGroups'] ?? [];
+        $targetApps = $banner['targetApps'] ?? [];
         $enabled = $banner['enabled'] ?? false;
         $dismissible = $banner['dismissible'] ?? false;
 
@@ -350,6 +418,7 @@ class ConfigService {
             $scheduleEnd,
             $audienceTarget,
             is_array($audienceGroups) ? implode(',', $this->normalizeStringList($audienceGroups)) : '',
+            is_array($targetApps) ? implode(',', $this->normalizeAppIds($targetApps)) : '',
             $enabled ? '1' : '0',
             $dismissible ? '1' : '0',
         ]));
@@ -376,6 +445,7 @@ class ConfigService {
             'scheduleEnd' => '',
             'audienceTarget' => 'all',
             'audienceGroups' => [],
+            'targetApps' => [],
         ];
     }
 
@@ -427,6 +497,7 @@ class ConfigService {
         string $scheduleEnd,
         string $audienceTarget,
         array $audienceGroups,
+        array $targetApps,
         string $updatedAt,
     ): array {
         $message = trim($message);
@@ -442,6 +513,7 @@ class ConfigService {
         $scheduleEnd = $this->normalizeScheduleValue($scheduleEnd);
         $audienceTarget = $this->normalizeAudienceTarget($audienceTarget);
         $audienceGroups = $this->normalizeStringList($audienceGroups);
+        $targetApps = $this->normalizeAppIds($targetApps);
 
         if ($scheduleStart !== '' && $scheduleEnd !== '') {
             $startTime = new \DateTimeImmutable($scheduleStart);
@@ -476,6 +548,7 @@ class ConfigService {
             'scheduleEnd' => $scheduleEnd,
             'audienceTarget' => $audienceTarget,
             'audienceGroups' => $audienceGroups,
+            'targetApps' => $targetApps,
             'createdAt' => (string)($seed['createdAt'] ?? $updatedAt),
             'updatedAt' => $updatedAt,
         ];
@@ -549,6 +622,7 @@ class ConfigService {
             'scheduleEnd' => $this->normalizeStoredScheduleValue((string)($banner['scheduleEnd'] ?? '')),
             'audienceTarget' => $this->normalizeAudienceTarget((string)($banner['audienceTarget'] ?? 'all')),
             'audienceGroups' => $this->normalizeStringList(is_array($banner['audienceGroups'] ?? null) ? $banner['audienceGroups'] : []),
+            'targetApps' => $this->normalizeAppIds(is_array($banner['targetApps'] ?? null) ? $banner['targetApps'] : []),
             'createdAt' => (string)($banner['createdAt'] ?? $this->getNow()),
             'updatedAt' => (string)($banner['updatedAt'] ?? $this->getNow()),
         ];
@@ -597,6 +671,7 @@ class ConfigService {
             $legacyScheduleStart,
             $legacyScheduleEnd,
             'all',
+            [],
             [],
             $now,
         );
@@ -717,6 +792,38 @@ class ConfigService {
         return array_values($normalized);
     }
 
+    private function normalizeAppId(string $appId): string {
+        $appId = strtolower(trim($appId));
+        if ($appId === '') {
+            return '';
+        }
+
+        $normalized = preg_replace('/[^a-z0-9_.-]/', '', $appId);
+        return is_string($normalized) ? $normalized : '';
+    }
+
+    /**
+     * @param array<int, mixed> $appIds
+     * @return array<int, string>
+     */
+    private function normalizeAppIds(array $appIds): array {
+        $normalized = [];
+
+        foreach ($appIds as $appId) {
+            $item = $this->normalizeAppId((string)$appId);
+            if ($item === '') {
+                continue;
+            }
+
+            $normalized[] = $item;
+        }
+
+        $normalized = array_values(array_unique($normalized));
+        natcasesort($normalized);
+
+        return array_values($normalized);
+    }
+
     /**
      * @param array<int, string> $viewerGroupIds
      */
@@ -743,6 +850,20 @@ class ConfigService {
         $viewerGroups = array_map('strval', $viewerGroupIds);
 
         return array_intersect($bannerGroups, $viewerGroups) !== [];
+    }
+
+    private function matchesTargetApps(array $banner, string $currentAppId): bool {
+        $targetApps = $this->normalizeAppIds(is_array($banner['targetApps'] ?? null) ? $banner['targetApps'] : []);
+        if ($targetApps === []) {
+            return true;
+        }
+
+        $normalizedCurrentAppId = $this->normalizeAppId($currentAppId);
+        if ($normalizedCurrentAppId === '') {
+            return false;
+        }
+
+        return in_array($normalizedCurrentAppId, $targetApps, true);
     }
 
     private function normalizeScheduleValue(string $value): string {

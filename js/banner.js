@@ -27,6 +27,32 @@
 		return false;
 	}
 
+	function normalizeAppId(value) {
+		return String(value || '').trim().toLowerCase().replace(/[^a-z0-9_.-]/g, '');
+	}
+
+	function getCurrentAppId() {
+		const path = (window.location && window.location.pathname) ? window.location.pathname : '';
+		if (/\/(?:index\.php\/)?settings\/user(?:\/|$)/i.test(path)) {
+			return 'settings';
+		}
+
+		if (/\/(?:index\.php\/)?settings\/admin(?:\/|$)/i.test(path)) {
+			return 'admin_settings';
+		}
+
+		const match = path.match(/\/(?:index\.php\/)?apps\/([^/?#]+)/i);
+		if (!match || !match[1]) {
+			return '';
+		}
+
+		try {
+			return normalizeAppId(decodeURIComponent(match[1]));
+		} catch {
+			return normalizeAppId(match[1]);
+		}
+	}
+
 	function escapeHtml(input) {
 		const div = document.createElement('div');
 		div.appendChild(document.createTextNode(input));
@@ -362,11 +388,15 @@
 			return;
 		}
 
+		const currentAppId = getCurrentAppId();
 		const url = OC.generateUrl('/apps/' + APP_ID + '/banner');
+		const requestUrl = currentAppId !== ''
+			? `${url}?${new URLSearchParams({ appId: currentAppId }).toString()}`
+			: url;
 		let payload;
 
 		try {
-			const response = await fetch(url, {
+			const response = await fetch(requestUrl, {
 				headers: { 'Accept': 'application/json' },
 			});
 

@@ -29,6 +29,7 @@ $settings = $_['settings'];
 				<div><?php p($_['labels']['status']); ?></div>
 				<div><?php p($_['labels']['previewColumn']); ?></div>
 				<div><?php p($_['labels']['audienceTarget']); ?></div>
+				<div><?php p($_['labels']['apps']); ?></div>
 				<div><?php p($_['labels']['starts']); ?></div>
 				<div><?php p($_['labels']['ends']); ?></div>
 				<div><?php p($_['labels']['actions']); ?></div>
@@ -259,6 +260,33 @@ $settings = $_['settings'];
 								<?php foreach ($_['availableGroups'] as $gid => $name): ?>
 									<option value="<?php p($gid); ?>" <?php if (in_array($gid, $settings['audienceGroups'] ?? [], true)) { print_unescaped('selected'); } ?>>
 										<?php p($name); ?>
+									</option>
+								<?php endforeach; ?>
+							</select>
+						</div>
+					</div>
+				</div>
+
+				<div class="announcementbanner-field">
+					<label class="announcementbanner-field__label" for="announcementbanner-target-apps">
+						<?php p($_['labels']['appTargets']); ?>
+					</label>
+					<div class="announcementbanner-field__control">
+						<div class="announcementbanner-multiselect announcementbanner-target-apps">
+							<label for="announcementbanner-target-apps" class="announcementbanner-subfield-label">
+								<?php p($_['labels']['appTargetsHelp']); ?>
+							</label>
+							<select
+								id="announcementbanner-target-apps"
+								name="targetApps"
+								class="announcementbanner-input announcementbanner-input--native-multiselect"
+								multiple
+								size="8"
+								data-placeholder="<?php p($_['labels']['appTargetsPlaceholder']); ?>"
+							>
+								<?php foreach ($_['availableApps'] as $appId => $appName): ?>
+									<option value="<?php p($appId); ?>" <?php if (in_array($appId, $settings['targetApps'] ?? [], true)) { print_unescaped('selected'); } ?>>
+										<?php p($appName); ?>
 									</option>
 								<?php endforeach; ?>
 							</select>
