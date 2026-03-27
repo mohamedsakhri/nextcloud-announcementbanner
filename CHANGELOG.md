@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2.4.2
+
+- Fix the audience groups picker in admin settings so the group list stays collapsed until opened.
+- Notify apps after banner height changes so embedded UIs can recalculate their layout.
+
 ## 2.4.1
 
 - Add page visibility modes for banners: show everywhere, show only on selected pages, or show everywhere except selected pages.
