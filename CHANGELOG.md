@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2.4.3
+
+- Add support for PHP 8.5
+
 ## 2.4.2
 
 - Fix the audience groups picker in admin settings so the group list stays collapsed until opened.
