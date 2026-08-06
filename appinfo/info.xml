@@ -38,12 +38,14 @@
     <category>tools</category>
     <category>organization</category>
     <dependencies>
-      <php min-version="8.1" max-version="8.5" />
-      <nextcloud min-version="30" max-version="34" />
+        <php min-version="8.1" max-version="8.5" />
+        <nextcloud min-version="30" max-version="34" />
     </dependencies>
     <settings>
         <admin>OCA\AnnouncementBanner\Settings\Admin</admin>
         <admin-section>OCA\AnnouncementBanner\Settings\Section</admin-section>
+        <!-- Delegation: allow groups access to the settings -->
+        <admin-delegation>OCA\AnnouncementBanner\Settings\Admin</admin-delegation>
     </settings>
     <bootstrap>OCA\AnnouncementBanner\AppInfo\Application</bootstrap>
 </info>
