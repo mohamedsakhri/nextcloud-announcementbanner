@@ -8,10 +8,11 @@ use OCA\AnnouncementBanner\AppInfo\Application;
 use OCA\AnnouncementBanner\Service\ConfigService;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\IL10N;
+use OCP\Settings\IDelegatedAdminSetting;
 use OCP\Settings\ISettings;
 use OCP\Util;
 
-class Admin implements ISettings {
+class Admin implements ISettings, IDelegatedAdminSetting {
     public function __construct(
         private IL10N $l10n,
         private ConfigService $configService,
@@ -56,7 +57,7 @@ class Admin implements ISettings {
                     'preview' => $this->l10n->t('Live preview'),
                     'previewColumn' => $this->l10n->t('Preview'),
                     'readMoreText' => $this->l10n->t('Read more label'),
-                    'readMoreTextPlaceholder' => $this->l10n->t('Optional link label, e.g. “Read more”'),
+                    'readMoreTextPlaceholder' => $this->l10n->t('Optional link label, e.g. "Read more"'),
                     'readMoreUrl' => $this->l10n->t('Read more link'),
                     'readMoreUrlPlaceholder' => $this->l10n->t('Add a link for more details'),
                     'scheduleStart' => $this->l10n->t('Schedule start (optional)'),
