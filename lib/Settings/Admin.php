@@ -8,11 +8,11 @@ use OCA\AnnouncementBanner\AppInfo\Application;
 use OCA\AnnouncementBanner\Service\ConfigService;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\IL10N;
-use OCP\Settings\IDelegatedAdminSetting;
+use OCP\Settings\IDelegatedSettings;
 use OCP\Settings\ISettings;
 use OCP\Util;
 
-class Admin implements ISettings, IDelegatedAdminSetting {
+class Admin implements ISettings, IDelegatedSettings {
     public function __construct(
         private IL10N $l10n,
         private ConfigService $configService,
