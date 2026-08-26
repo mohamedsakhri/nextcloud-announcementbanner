@@ -6,9 +6,10 @@ namespace OCA\AnnouncementBanner\Controller;
 
 use InvalidArgumentException;
 use OCA\AnnouncementBanner\Service\ConfigService;
+use OCA\AnnouncementBanner\Settings\Admin;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
-use OCP\AppFramework\Http\Attribute\AdminRequired;
+use OCP\AppFramework\Http\Attribute\AuthorizedAdminSetting;
 use OCP\AppFramework\Http\Attribute\CSRFRequired;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
@@ -45,13 +46,13 @@ class BannerController extends Controller {
         ]);
     }
 
-    #[AdminRequired]
+    #[AuthorizedAdminSetting(settings: Admin::class)]
     #[NoCSRFRequired]
     public function listBanners(): DataResponse {
         return new DataResponse($this->configService->getBannersForAdmin());
     }
 
-    #[AdminRequired]
+    #[AuthorizedAdminSetting(settings: Admin::class)]
     #[NoCSRFRequired]
     public function getBannerDetails(string $id): DataResponse {
         $banner = $this->configService->getBanner($id);
@@ -62,7 +63,7 @@ class BannerController extends Controller {
         return new DataResponse($banner);
     }
 
-    #[AdminRequired]
+    #[AuthorizedAdminSetting(settings: Admin::class)]
     #[CSRFRequired]
     public function createBanner(): DataResponse {
         $payload = $this->readInput();
@@ -98,7 +99,7 @@ class BannerController extends Controller {
         return new DataResponse($banner);
     }
 
-    #[AdminRequired]
+    #[AuthorizedAdminSetting(settings: Admin::class)]
     #[CSRFRequired]
     public function updateBanner(string $id): DataResponse {
         $payload = $this->readInput();
@@ -136,7 +137,7 @@ class BannerController extends Controller {
         return new DataResponse($banner);
     }
 
-    #[AdminRequired]
+    #[AuthorizedAdminSetting(settings: Admin::class)]
     #[CSRFRequired]
     public function deleteBanner(string $id): DataResponse {
         try {
@@ -151,7 +152,7 @@ class BannerController extends Controller {
         return new DataResponse(['id' => $id]);
     }
 
-    #[AdminRequired]
+    #[AuthorizedAdminSetting(settings: Admin::class)]
     #[CSRFRequired]
     public function reorderBanners(): DataResponse {
         $payload = $this->readInput();
@@ -180,6 +181,7 @@ class BannerController extends Controller {
 
         return new DataResponse($banners);
     }
+
     /**
      * Merge form params with JSON body to support both content types.
      */

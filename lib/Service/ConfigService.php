@@ -289,7 +289,7 @@ class ConfigService {
     public function getPublicBanners(?string $viewerUid = null, bool $isAdmin = false, array $viewerGroupIds = [], string $currentAppId = ''): array {
         $banners = [];
         foreach ($this->getBanners() as $banner) {
-            if (empty($banner['enabled']) || empty($banner['message'])) {
+            if (empty($banner['message']) || $this->getBannerStatus($banner) !== 'active') {
                 continue;
             }
 
