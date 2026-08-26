@@ -188,6 +188,25 @@ occ announcementbanner:list --output=json
 occ announcementbanner:delete <id>
 ```
 
+**Translations:**
+
+```
+occ announcementbanner:create "Scheduled maintenance tonight." \
+  --message-translations='{"de":"Geplante Wartungsarbeiten heute Nacht.","fr":"Maintenance planifiée ce soir."}' \
+  --link-text="Status page" \
+  --link-url="https://status.example.com" \
+  --link-text-translations='{"de":"Statusseite","fr":"Page de statut"}'
+```
+
+The positional message (and `--link-text`) is the fallback shown to any user whose language has no entry in the JSON map. Locale keys are matched the same way as the admin UI (case-insensitive, `_` and `-` interchangeable, e.g. `de`, `pt-br`).
+
+On `update`, `--message-translations`/`--link-text-translations` **replace the whole translations map**, not merge into it — omit the option to leave existing translations untouched, or re-pass the full map (including unchanged locales) to edit just one language:
+
+```
+occ announcementbanner:update <id> \
+  --message-translations='{"de":"Geplante Wartungsarbeiten heute Nacht.","fr":"Maintenance planifiée ce soir.","es":"Mantenimiento programado esta noche."}'
+```
+
 **Audience targeting:**
 
 ```
