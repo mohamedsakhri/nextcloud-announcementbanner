@@ -60,6 +60,48 @@ class ConfigService {
     ) {
     }
 
+    /**
+     * @return string[]
+     */
+    public function getAllowedVariants(): array {
+        return $this->allowedVariants;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getAllowedTextAlignments(): array {
+        return $this->allowedTextAlignments;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getAllowedAudienceTargets(): array {
+        return $this->allowedAudienceTargets;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getAllowedAudienceGroupsModes(): array {
+        return $this->allowedAudienceGroupsModes;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getAllowedAudienceGroupsMatches(): array {
+        return $this->allowedAudienceGroupsMatches;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getAllowedTargetAppModes(): array {
+        return $this->allowedTargetAppModes;
+    }
+
     public function hasEnabledBanners(): bool {
         foreach ($this->getBanners() as $banner) {
             if (!empty($banner['enabled'])) {

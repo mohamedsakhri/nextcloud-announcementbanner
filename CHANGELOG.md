@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2.6.0
+
+- Add occ commands to manage banners from the CLI: `announcementbanner:create`, `announcementbanner:update`, `announcementbanner:delete`, and `announcementbanner:list`, covering message text, colour/variant, schedule window, read-more link, and the dismiss icon, so banners can be scripted (e.g. switching a banner through warning, danger, and success states around a maintenance window).
+
 ## 2.5.0
 
 - Add settings delegation support: admins can grant specific groups access to manage banners without full server admin rights, scoped to this app's settings only.

@@ -20,7 +20,7 @@
  * Live preview in admin settings before publishing to everyone.
  * Changes take effect immediately after saving.
  * Delegate banner management to specific admin groups via Nextcloud's settings delegation, without granting full server admin rights.]]></description>
-    <version>2.5.0</version>
+    <version>2.6.0</version>
     <licence>gpl3</licence>
     <author>Mohamed Sakhri</author>
     <namespace>AnnouncementBanner</namespace>
@@ -46,5 +46,11 @@
         <admin>OCA\AnnouncementBanner\Settings\Admin</admin>
         <admin-section>OCA\AnnouncementBanner\Settings\Section</admin-section>
     </settings>
+    <commands>
+        <command>OCA\AnnouncementBanner\Command\CreateBanner</command>
+        <command>OCA\AnnouncementBanner\Command\UpdateBanner</command>
+        <command>OCA\AnnouncementBanner\Command\DeleteBanner</command>
+        <command>OCA\AnnouncementBanner\Command\ListBanners</command>
+    </commands>
     <bootstrap>OCA\AnnouncementBanner\AppInfo\Application</bootstrap>
 </info>

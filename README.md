@@ -17,6 +17,7 @@ The Announcement Banner App adds customizable notification bars at the top of yo
 - [Page Targeting](#-page-targeting)
 - [Schedule](#-schedule)
 - [Delegation](#-delegation)
+- [Command Line (occ)](#-command-line-occ)
 - [Theme](#-theme)
 - [Translations](#-translations)
 - [Requirements](#-requirements)
@@ -38,6 +39,7 @@ The Announcement Banner App adds customizable notification bars at the top of yo
 - Live preview in the admin settings; changes take effect for users after saving.
 - Multi-language support (English, German, French, Spanish, …).
 - Settings delegation: let specific groups manage banners without giving them full Nextcloud admin rights.
+- `occ` commands to create, update, list, and delete banners, so banners can be scripted (e.g. from a cron job, deployment pipeline, or backup script).
 
 ## 🚀 Installation
 
@@ -129,6 +131,129 @@ Announcement Banner supports Nextcloud's [settings delegation](https://docs.next
 Once granted, members of that group get an **Announcement banner** entry in their Administration settings, where they can create, edit, reorder, and delete banners exactly like a full admin would — but nothing else in Administration settings becomes accessible to them.
 
 **Scope of access:** delegation for this app is scoped to its own configuration only. A delegated group can manage banners, but cannot read or change settings belonging to any other app, and cannot grant itself (or anyone else) further admin rights.
+
+## 💻 Command Line (occ)
+
+Banners can be managed from the command line, which is useful for scripting an announcement around a maintenance window (e.g. warn users, switch to a "maintenance in progress" banner, then confirm completion).
+
+**Create a banner:**
+
+```
+occ announcementbanner:create "Backup starts in 15 minutes. Please save your work." \
+  --variant=warning \
+  --start="2026-08-26 14:45" \
+  --end="2026-08-26 15:00" \
+  --no-dismiss
+```
+
+This prints the new banner's id, which you can reuse to update or delete it later.
+
+**Create a banner with a custom colour:**
+
+```
+occ announcementbanner:create "Scheduled network maintenance tonight." \
+  --variant=custom \
+  --background="#6f42c1" \
+  --text-color="#ffffff"
+```
+
+`--background`/`--text-color` are only applied when `--variant=custom`; both must be valid hex colours (e.g. `#fff`, `#6f42c1`, or `#6f42c1cc` with alpha).
+
+**Update a banner** (only the passed options change; everything else keeps its current value):
+
+```
+occ announcementbanner:update <id> \
+  --variant=danger \
+  --message="Backup in progress. Please do not close your session." \
+  --no-dismiss
+```
+
+```
+occ announcementbanner:update <id> \
+  --variant=success \
+  --message="Backup finished. You can continue your work." \
+  --dismiss
+```
+
+**List banners:**
+
+```
+occ announcementbanner:list
+occ announcementbanner:list --output=json
+```
+
+**Delete a banner:**
+
+```
+occ announcementbanner:delete <id>
+```
+
+**Audience targeting:**
+
+```
+# admins only
+occ announcementbanner:create "Admins: check the update log." --audience=admins
+
+# only members of "backup-team" see it
+occ announcementbanner:create "Backup running" \
+  --audience=groups --groups=backup-team --groups-mode=only --groups-match=any
+
+# everyone EXCEPT members of "backup-team" sees it
+occ announcementbanner:create "Standard notice" \
+  --audience=groups --groups=backup-team --groups-mode=exclude
+
+# must be a member of every listed group at once
+occ announcementbanner:create "Cross-team notice" \
+  --audience=groups --groups=admin,backup-team --groups-mode=only --groups-match=all
+```
+
+`--audience=groups` requires at least one `--groups` entry.
+
+**Page targeting:**
+
+```
+# only shown on Files
+occ announcementbanner:create "Files banner" --apps=files --apps-mode=only
+
+# shown everywhere except Administration settings
+occ announcementbanner:create "Not on admin settings" --apps=admin_settings --apps-mode=exclude
+```
+
+`--apps-mode=only` or `--apps-mode=exclude` require at least one `--apps` entry; `--apps-mode=all` (the default) ignores `--apps` and shows the banner everywhere.
+
+Common options for `create` and `update`:
+
+| Option | Description |
+| --- | --- |
+| `--variant` | `info`, `success`, `warning`, `danger`, or `custom` |
+| `--background`, `--text-color` | Custom hex colors, used with `--variant=custom` |
+| `--align` | `left`, `center`, or `right` |
+| `--start`, `--end` | Schedule window (any format understood by PHP's `DateTime`) |
+| `--no-dismiss` / `--dismiss` | Disable/enable the dismiss (close) icon |
+| `--link-text`, `--link-url` | Optional "read more" link |
+| `--audience` | `all`, `admins`, or `groups` |
+| `--groups` | Comma-separated group ids, used when `--audience=groups` |
+| `--groups-mode` | `only` (restrict to these groups) or `exclude` (everyone except these groups) |
+| `--groups-match` | `any` (member of at least one group) or `all` (member of every group) |
+| `--apps` | Comma-separated app/settings ids to target, e.g. `files,deck,settings,admin_settings` |
+| `--apps-mode` | `all` (everywhere, default), `only`, or `exclude` |
+| `--message-translations`, `--link-text-translations` | JSON objects mapping locale to translated text, e.g. `'{"de":"Text"}'` |
+
+`create` also accepts `--disabled` (create inactive), and `update` accepts `--enable`/`--disable`.
+
+**Full option list:** each command's help is generated automatically, so you don't need to rely on this table:
+
+```
+occ help announcementbanner:create
+occ help announcementbanner:update
+occ help announcementbanner:list
+occ help announcementbanner:delete
+
+# equivalent form
+occ announcementbanner:create --help
+```
+
+`occ list announcementbanner` also lists all four commands with their one-line descriptions.
 
 ## 🎨 Theme
 
