@@ -39,13 +39,14 @@ class ListBanners extends Command {
         }
 
         $table = new Table($output);
-        $table->setHeaders(['Id', 'Status', 'Variant', 'Message', 'Start', 'End', 'Dismissible', 'Link']);
+        $table->setHeaders(['Id', 'Status', 'Variant', 'Icon', 'Message', 'Start', 'End', 'Dismissible', 'Link']);
 
         foreach ($banners as $banner) {
             $table->addRow([
                 $banner['id'],
                 $banner['status'],
                 $banner['variant'],
+                $banner['icon'] ?? 'megaphone',
                 $this->truncate((string)$banner['message']),
                 $banner['scheduleStart'] ?: '-',
                 $banner['scheduleEnd'] ?: '-',

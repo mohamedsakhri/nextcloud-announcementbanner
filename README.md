@@ -19,6 +19,7 @@ The Announcement Banner App adds customizable notification bars at the top of yo
 - [Delegation](#-delegation)
 - [Command Line (occ)](#-command-line-occ)
 - [Theme](#-theme)
+- [Icons](#-icons)
 - [Translations](#-translations)
 - [Requirements](#-requirements)
 - [How you can support this project](#-how-you-can-support-this-project)
@@ -32,6 +33,7 @@ The Announcement Banner App adds customizable notification bars at the top of yo
 - Audience targeting: show each banner to everyone, admins only, or specific groups with an exclude mode ("everyone except these groups") and any/all group matching.
 - Page targeting: limit a banner to specific Nextcloud apps and settings pages such as `files`, `deck`, `settings` (personal settings), or `admin_settings` (administration settings).
 - Theme variants: info, success, warning, danger, custom.
+- Icon picker: choose the icon shown at the start of the banner message from 42 options (this app's original megaphone, a "no icon" option, plus a curated set from Material Design Icons).
 - Optional dismiss button for users.
 - Optional “read more” link with customizable label and URL.
 - Text alignment control (left, center, right) for banner content.
@@ -50,6 +52,7 @@ Install from the Nextcloud App Store: [Announcement Banner](https://apps.nextclo
 - **Add new banner** to create a new message; manage all banners from the overview.
 - **Overview order controls**: Use the arrow buttons in the actions column to change the order in which active banners are shown.
 - **Banner message**: Text to display.
+- **Icon**: The icon shown at the start of the message; pick from the built-in set.
 - **Color scheme**: Info, Success, Warning, Danger, Custom (custom background/text colors).
 - **Text alignment**: Left, Center, Right.
 - **Enable banner** toggle.
@@ -141,12 +144,13 @@ Banners can be managed from the command line, which is useful for scripting an a
 ```
 occ announcementbanner:create "Backup starts in 15 minutes. Please save your work." \
   --variant=warning \
+  --icon=clock-alert \
   --start="2026-08-26 14:45" \
   --end="2026-08-26 15:00" \
   --no-dismiss
 ```
 
-This prints the new banner's id, which you can reuse to update or delete it later.
+This prints the new banner's id, which you can reuse to update or delete it later. `--icon` picks the icon shown at the start of the message; see [Icons](#-icons) for the full list. Omit it (or pass `--icon=megaphone`) to keep the default.
 
 **Create a banner with a custom colour:**
 
@@ -164,6 +168,7 @@ occ announcementbanner:create "Scheduled network maintenance tonight." \
 ```
 occ announcementbanner:update <id> \
   --variant=danger \
+  --icon=progress-wrench \
   --message="Backup in progress. Please do not close your session." \
   --no-dismiss
 ```
@@ -171,6 +176,7 @@ occ announcementbanner:update <id> \
 ```
 occ announcementbanner:update <id> \
   --variant=success \
+  --icon=check-circle \
   --message="Backup finished. You can continue your work." \
   --dismiss
 ```
@@ -245,6 +251,7 @@ Common options for `create` and `update`:
 | Option | Description |
 | --- | --- |
 | `--variant` | `info`, `success`, `warning`, `danger`, or `custom` |
+| `--icon` | Icon shown at the start of the message; one of 41 ids, see [Icons](#-icons) (default `megaphone`) |
 | `--background`, `--text-color` | Custom hex colors, used with `--variant=custom` |
 | `--align` | `left`, `center`, or `right` |
 | `--start`, `--end` | Schedule window (any format understood by PHP's `DateTime`) |
@@ -277,6 +284,10 @@ occ announcementbanner:create --help
 ## 🎨 Theme
 
 Choose between info, success, warning, and danger presets, or switch to the custom theme to define your own background and text colors.
+
+## 🖼️ Icons
+
+Pick the icon shown at the start of the banner message from 42 built-in options: `megaphone` (this app's original icon and the default), `none` (no icon shown), plus a curated set vendored from [Material Design Icons](https://github.com/Templarian/MaterialDesign-SVG) (Apache-2.0 licensed) covering common announcement themes — alerts (`alert`, `alert-circle`, `alert-octagon`), status (`check-circle`, `close-circle`, `shield-check`), maintenance (`wrench`, `progress-wrench`, `server`, `database`, `cloud-alert`), scheduling (`calendar`, `calendar-clock`, `clock-alert`), and more (`bell`, `email`, `gift`, `rocket-launch`, `party-popper`, `help-circle`, …). The full list is in `ConfigService::getAllowedIcons()`; the same list backs the admin dropdown and the CLI's `--icon` option.
 
 ## 🌍 Translations
 

@@ -12,6 +12,7 @@
  * Audience targeting for everyone, admins only, or specific groups.
  * Page targeting for selected apps and settings areas, including personal settings and administration settings.
  * Banners visible on the targeted pages for the selected audience with themed variants (info, success, warning, danger, custom).
+ * Choose an icon shown at the start of the banner message, from a curated set including Material Design Icons.
  * Change the order of active banners from the admin overview when several banners are shown at the same time.
  * Optional schedule with start/end times to control when banners are visible.
  * Optional dismiss button so users can hide the banner when allowed.
@@ -20,7 +21,7 @@
  * Live preview in admin settings before publishing to everyone.
  * Changes take effect immediately after saving.
  * Delegate banner management to specific admin groups via Nextcloud's settings delegation, without granting full server admin rights.]]></description>
-    <version>2.6.0</version>
+    <version>2.7.0</version>
     <licence>gpl3</licence>
     <author>Mohamed Sakhri</author>
     <namespace>AnnouncementBanner</namespace>

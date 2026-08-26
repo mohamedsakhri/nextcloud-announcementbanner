@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OCA\AnnouncementBanner\Controller;
 
 use InvalidArgumentException;
+use OCA\AnnouncementBanner\Exception\BannerNotFoundException;
 use OCA\AnnouncementBanner\Service\ConfigService;
 use OCA\AnnouncementBanner\Settings\Admin;
 use OCP\AppFramework\Controller;
@@ -15,6 +16,7 @@ use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IGroupManager;
+use OCP\IL10N;
 use OCP\IRequest;
 use OCP\IUser;
 use OCP\IUserSession;
@@ -26,6 +28,7 @@ class BannerController extends Controller {
         private ConfigService $configService,
         private IUserSession $userSession,
         private IGroupManager $groupManager,
+        private IL10N $l10n,
     ) {
         parent::__construct($appName, $request);
     }
@@ -57,7 +60,7 @@ class BannerController extends Controller {
     public function getBannerDetails(string $id): DataResponse {
         $banner = $this->configService->getBanner($id);
         if ($banner === null) {
-            return new DataResponse(['message' => 'Banner not found.'], Http::STATUS_NOT_FOUND);
+            return new DataResponse(['message' => $this->l10n->t('Banner not found.')], Http::STATUS_NOT_FOUND);
         }
 
         return new DataResponse($banner);
@@ -75,6 +78,7 @@ class BannerController extends Controller {
                 $data['message'],
                 $data['messageTranslations'],
                 $data['variant'],
+                $data['icon'],
                 $data['customBackground'],
                 $data['customText'],
                 $data['textAlignment'],
@@ -114,6 +118,7 @@ class BannerController extends Controller {
                 $data['message'],
                 $data['messageTranslations'],
                 $data['variant'],
+                $data['icon'],
                 $data['customBackground'],
                 $data['customText'],
                 $data['textAlignment'],
@@ -131,7 +136,7 @@ class BannerController extends Controller {
                 $data['targetApps'],
             );
         } catch (InvalidArgumentException $e) {
-            $code = $e->getMessage() === 'Banner not found.' ? Http::STATUS_NOT_FOUND : Http::STATUS_BAD_REQUEST;
+            $code = $e instanceof BannerNotFoundException ? Http::STATUS_NOT_FOUND : Http::STATUS_BAD_REQUEST;
             return new DataResponse(
                 ['message' => $e->getMessage()],
                 $code
@@ -169,7 +174,7 @@ class BannerController extends Controller {
 
         if (!is_array($ids)) {
             return new DataResponse(
-                ['message' => 'Invalid banner order payload.'],
+                ['message' => $this->l10n->t('Invalid banner order payload.')],
                 Http::STATUS_BAD_REQUEST
             );
         }
@@ -207,7 +212,7 @@ class BannerController extends Controller {
     }
 
     /**
-     * @return array{enabled: bool, message: string, messageTranslations: array<string, string>, variant: string, customBackground: string, customText: string, textAlignment: string, dismissible: bool, readMoreText: string, readMoreTextTranslations: array<string, string>, readMoreUrl: string, scheduleStart: string, scheduleEnd: string, audienceTarget: string, audienceGroups: array<int, string>, audienceGroupsMode: string, audienceGroupsMatch: string, targetAppMode: string, targetApps: array<int, string>}
+     * @return array{enabled: bool, message: string, messageTranslations: array<string, string>, variant: string, icon: string, customBackground: string, customText: string, textAlignment: string, dismissible: bool, readMoreText: string, readMoreTextTranslations: array<string, string>, readMoreUrl: string, scheduleStart: string, scheduleEnd: string, audienceTarget: string, audienceGroups: array<int, string>, audienceGroupsMode: string, audienceGroupsMatch: string, targetAppMode: string, targetApps: array<int, string>}
      */
     private function extractBannerPayload(array $payload): array {
         return [
@@ -216,6 +221,7 @@ class BannerController extends Controller {
             'message' => (string)($payload['message'] ?? ''),
             'messageTranslations' => $this->normalizeTranslations($payload['messageTranslations'] ?? []),
             'variant' => (string)($payload['variant'] ?? 'info'),
+            'icon' => (string)($payload['icon'] ?? 'megaphone'),
             'customBackground' => (string)($payload['customBackground'] ?? ''),
             'customText' => (string)($payload['customText'] ?? ''),
             'textAlignment' => (string)($payload['textAlignment'] ?? 'left'),

@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2.7.0
+
+- Add a per-banner icon picker: choose from 42 icons (the app's original megaphone, a "No icon" option, plus a curated set from Material Design Icons, Apache-2.0) shown at the start of the banner message. Available in the admin settings form, live preview, and the `--icon` option on the `announcementbanner:create`/`announcementbanner:update` occ commands.
+- Polish the admin settings page: softer shadows and rounded corners on the overview and editor cards, refined spacing and input styling, and a hover highlight on overview rows, while keeping the familiar table and field layout.
+- Make all remaining admin UI text translatable: the icon picker's option labels, a couple of JS fallback strings, and backend validation/error messages that previously surfaced in English regardless of the admin's language.
+
 ## 2.6.0
 
 - Add occ commands to manage banners from the CLI: `announcementbanner:create`, `announcementbanner:update`, `announcementbanner:delete`, and `announcementbanner:list`, covering message text, colour/variant, schedule window, read-more link, and the dismiss icon, so banners can be scripted (e.g. switching a banner through warning, danger, and success states around a maintenance window).

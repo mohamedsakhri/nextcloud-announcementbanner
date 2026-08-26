@@ -129,6 +129,22 @@ $settings = $_['settings'];
 				</div>
 
 				<div class="announcementbanner-field">
+					<label class="announcementbanner-field__label" for="announcementbanner-icon">
+						<?php p($_['labels']['icon']); ?>
+					</label>
+					<div class="announcementbanner-field__control">
+						<select id="announcementbanner-icon" name="icon" class="announcementbanner-input announcementbanner-input--native-multiselect">
+							<?php foreach ($_['availableIcons'] as $iconId): ?>
+								<option value="<?php p($iconId); ?>" <?php if (($settings['icon'] ?? 'megaphone') === $iconId) { print_unescaped('selected'); } ?>>
+									<?php p($_['iconLabels'][$iconId] ?? $iconId); ?>
+								</option>
+							<?php endforeach; ?>
+						</select>
+						<div class="announcementbanner-icon-select" data-announcementbanner-icon-picker></div>
+					</div>
+				</div>
+
+				<div class="announcementbanner-field">
 					<label class="announcementbanner-field__label" for="announcementbanner-readmore-text">
 						<?php p($_['labels']['readMoreText']); ?>
 					</label>

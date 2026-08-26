@@ -6,8 +6,10 @@ namespace OCA\AnnouncementBanner\Service;
 
 use InvalidArgumentException;
 use OCA\AnnouncementBanner\AppInfo\Application;
+use OCA\AnnouncementBanner\Exception\BannerNotFoundException;
 use OCP\IConfig;
 use OCP\IGroupManager;
+use OCP\IL10N;
 use OCP\INavigationManager;
 
 class ConfigService {
@@ -52,11 +54,32 @@ class ConfigService {
      * @var string[]
      */
     private array $allowedTargetAppModes = ['all', 'only', 'exclude'];
+    /**
+     * Keep in sync with js/banner-icons.js and img/icons/*.svg.
+     *
+     * @var string[]
+     */
+    private array $allowedIcons = [
+        'megaphone', 'none', 'bullhorn', 'bell', 'bell-ring',
+        'alert', 'alert-circle', 'alert-octagon',
+        'information', 'information-outline',
+        'check-circle', 'check-decagram', 'close-circle', 'close-octagon',
+        'shield-alert', 'shield-check', 'lock',
+        'wrench', 'progress-wrench', 'broom',
+        'server', 'server-off', 'database',
+        'cloud', 'cloud-alert', 'wifi-off',
+        'sync', 'update', 'download', 'upload',
+        'calendar', 'calendar-clock', 'clock-alert',
+        'email', 'flag', 'star', 'gift',
+        'party-popper', 'rocket-launch', 'new-box', 'lightning-bolt',
+        'help-circle',
+    ];
 
     public function __construct(
         private IConfig $config,
         private IGroupManager $groupManager,
         private INavigationManager $navigationManager,
+        private IL10N $l10n,
     ) {
     }
 
@@ -100,6 +123,13 @@ class ConfigService {
      */
     public function getAllowedTargetAppModes(): array {
         return $this->allowedTargetAppModes;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getAllowedIcons(): array {
+        return $this->allowedIcons;
     }
 
     public function hasEnabledBanners(): bool {
@@ -151,6 +181,7 @@ class ConfigService {
         string $message,
         array $messageTranslations,
         string $variant,
+        string $icon,
         string $customBackground,
         string $customText,
         string $textAlignment,
@@ -178,6 +209,7 @@ class ConfigService {
             $message,
             $messageTranslations,
             $variant,
+            $icon,
             $customBackground,
             $customText,
             $textAlignment,
@@ -210,6 +242,7 @@ class ConfigService {
         string $message,
         array $messageTranslations,
         string $variant,
+        string $icon,
         string $customBackground,
         string $customText,
         string $textAlignment,
@@ -241,6 +274,7 @@ class ConfigService {
                 $message,
                 $messageTranslations,
                 $variant,
+                $icon,
                 $customBackground,
                 $customText,
                 $textAlignment,
@@ -263,7 +297,7 @@ class ConfigService {
         }
 
         if ($updated === null) {
-            throw new InvalidArgumentException('Banner not found.');
+            throw new BannerNotFoundException($this->l10n->t('Banner not found.'));
         }
 
         $this->saveBanners($banners);
@@ -285,7 +319,7 @@ class ConfigService {
         }
 
         if (!$deleted) {
-            throw new InvalidArgumentException('Banner not found.');
+            throw new BannerNotFoundException($this->l10n->t('Banner not found.'));
         }
 
         $this->saveBanners($remaining);
@@ -303,11 +337,11 @@ class ConfigService {
         ));
 
         if (count($normalizedIds) !== count($banners)) {
-            throw new InvalidArgumentException('Banner order must include all banners.');
+            throw new InvalidArgumentException($this->l10n->t('Banner order must include all banners.'));
         }
 
         if (count(array_unique($normalizedIds)) !== count($normalizedIds)) {
-            throw new InvalidArgumentException('Banner order contains duplicate banner ids.');
+            throw new InvalidArgumentException($this->l10n->t('Banner order contains duplicate banner ids.'));
         }
 
         $bannersById = [];
@@ -320,13 +354,13 @@ class ConfigService {
         }
 
         if (count($bannersById) !== count($banners)) {
-            throw new InvalidArgumentException('Unable to reorder banners with missing ids.');
+            throw new InvalidArgumentException($this->l10n->t('Unable to reorder banners with missing ids.'));
         }
 
         $reordered = [];
         foreach ($normalizedIds as $id) {
             if ($id === '' || !isset($bannersById[$id])) {
-                throw new InvalidArgumentException('Banner order contains unknown banner ids.');
+                throw new InvalidArgumentException($this->l10n->t('Banner order contains unknown banner ids.'));
             }
             $reordered[] = $bannersById[$id];
         }
@@ -455,6 +489,7 @@ class ConfigService {
         $message = $banner['message'] ?? '';
         $messageTranslations = $banner['messageTranslations'] ?? [];
         $variant = $banner['variant'] ?? 'info';
+        $icon = $banner['icon'] ?? 'megaphone';
         $customBackground = $banner['customBackground'] ?? '';
         $customText = $banner['customText'] ?? '';
         $textAlignment = $banner['textAlignment'] ?? 'left';
@@ -477,6 +512,7 @@ class ConfigService {
             $message,
             $this->encodeTranslations($messageTranslations),
             $variant,
+            $icon,
             $customBackground,
             $customText,
             $textAlignment,
@@ -506,6 +542,7 @@ class ConfigService {
             'message' => '',
             'messageTranslations' => [],
             'variant' => 'info',
+            'icon' => 'megaphone',
             'customBackground' => '',
             'customText' => '',
             'textAlignment' => 'left',
@@ -561,6 +598,7 @@ class ConfigService {
         string $message,
         array $messageTranslations,
         string $variant,
+        string $icon,
         string $customBackground,
         string $customText,
         string $textAlignment,
@@ -581,6 +619,7 @@ class ConfigService {
         $message = trim($message);
         $messageTranslations = $this->normalizeTranslations($messageTranslations);
         $variant = $this->normalizeVariant($variant);
+        $icon = $this->normalizeIcon($icon);
         $customBackground = $this->normalizeColor($customBackground);
         $customText = $this->normalizeColor($customText);
         $textAlignment = $this->normalizeTextAlignment($textAlignment);
@@ -600,20 +639,20 @@ class ConfigService {
             $startTime = new \DateTimeImmutable($scheduleStart);
             $endTime = new \DateTimeImmutable($scheduleEnd);
             if ($startTime > $endTime) {
-                throw new InvalidArgumentException('Schedule end must be after schedule start.');
+                throw new InvalidArgumentException($this->l10n->t('Schedule end must be after schedule start.'));
             }
         }
 
         if ($enabled && $message === '') {
-            throw new InvalidArgumentException('Message is required when the banner is enabled.');
+            throw new InvalidArgumentException($this->l10n->t('Message is required when the banner is enabled.'));
         }
 
         if ($audienceTarget === 'groups' && $audienceGroups === []) {
-            throw new InvalidArgumentException('Select at least one group when group targeting is enabled.');
+            throw new InvalidArgumentException($this->l10n->t('Select at least one group when group targeting is enabled.'));
         }
 
         if ($targetAppMode !== 'all' && $targetApps === []) {
-            throw new InvalidArgumentException('Select at least one page when page targeting is enabled.');
+            throw new InvalidArgumentException($this->l10n->t('Select at least one page when page targeting is enabled.'));
         }
 
         return [
@@ -622,6 +661,7 @@ class ConfigService {
             'message' => $message,
             'messageTranslations' => $messageTranslations,
             'variant' => $variant,
+            'icon' => $icon,
             'customBackground' => $customBackground,
             'customText' => $customText,
             'textAlignment' => $textAlignment,
@@ -699,6 +739,7 @@ class ConfigService {
             'message' => trim((string)($banner['message'] ?? '')),
             'messageTranslations' => $this->normalizeTranslations(is_array($messageTranslations) ? $messageTranslations : []),
             'variant' => $this->normalizeVariant((string)($banner['variant'] ?? 'info')),
+            'icon' => $this->normalizeIcon((string)($banner['icon'] ?? 'megaphone')),
             'customBackground' => $this->normalizeColor((string)($banner['customBackground'] ?? '')),
             'customText' => $this->normalizeColor((string)($banner['customText'] ?? '')),
             'textAlignment' => $this->normalizeTextAlignment((string)($banner['textAlignment'] ?? 'left')),
@@ -752,6 +793,7 @@ class ConfigService {
             $legacyMessage,
             $this->getTranslations(self::KEY_MESSAGE_TRANSLATIONS),
             $this->getAppValue(self::KEY_VARIANT, 'info'),
+            'megaphone',
             '',
             '',
             $this->getAppValue(self::KEY_TEXT_ALIGNMENT, 'left'),
@@ -780,6 +822,16 @@ class ConfigService {
         }
 
         return $variant;
+    }
+
+    private function normalizeIcon(string $icon): string {
+        $icon = strtolower(trim($icon));
+
+        if (!in_array($icon, $this->allowedIcons, true)) {
+            return 'megaphone';
+        }
+
+        return $icon;
     }
 
     private function normalizeColor(string $value): string {
@@ -1012,7 +1064,7 @@ class ConfigService {
         try {
             $date = new \DateTimeImmutable($value);
         } catch (\Exception $e) {
-            throw new InvalidArgumentException('Schedule value must be a valid date/time.');
+            throw new InvalidArgumentException($this->l10n->t('Schedule value must be a valid date/time.'));
         }
 
         return $date->format(\DateTimeInterface::ATOM);

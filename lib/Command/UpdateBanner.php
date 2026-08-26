@@ -71,6 +71,7 @@ class UpdateBanner extends Command {
         }
 
         $variant = $input->getOption('variant') ?? $banner['variant'];
+        $icon = $input->getOption('icon') ?? $banner['icon'];
         $align = $input->getOption('align') ?? $banner['textAlignment'];
         $audience = $input->getOption('audience') ?? $banner['audienceTarget'];
         $groupsMode = $input->getOption('groups-mode') ?? $banner['audienceGroupsMode'];
@@ -80,7 +81,7 @@ class UpdateBanner extends Command {
         $textColor = (string)($input->getOption('text-color') ?? $banner['customText']);
 
         try {
-            $this->validateBannerChoices($variant, $align, $audience, $groupsMode, $groupsMatch, $appsMode);
+            $this->validateBannerChoices($variant, $icon, $align, $audience, $groupsMode, $groupsMatch, $appsMode);
             $this->validateColor($background, 'background');
             $this->validateColor($textColor, 'text-color');
 
@@ -90,6 +91,7 @@ class UpdateBanner extends Command {
                 (string)($input->getOption('message') ?? $banner['message']),
                 $this->parseTranslations($input, 'message-translations') ?? $banner['messageTranslations'],
                 $variant,
+                $icon,
                 $background,
                 $textColor,
                 $align,

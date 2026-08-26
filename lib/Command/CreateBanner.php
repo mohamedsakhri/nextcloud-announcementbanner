@@ -37,6 +37,7 @@ class CreateBanner extends Command {
         $io = new SymfonyStyle($input, $output);
 
         $variant = $input->getOption('variant') ?? 'info';
+        $icon = $input->getOption('icon') ?? 'megaphone';
         $align = $input->getOption('align') ?? 'left';
         $audience = $input->getOption('audience') ?? 'all';
         $groupsMode = $input->getOption('groups-mode') ?? 'only';
@@ -46,7 +47,7 @@ class CreateBanner extends Command {
         $textColor = (string)($input->getOption('text-color') ?? '');
 
         try {
-            $this->validateBannerChoices($variant, $align, $audience, $groupsMode, $groupsMatch, $appsMode);
+            $this->validateBannerChoices($variant, $icon, $align, $audience, $groupsMode, $groupsMatch, $appsMode);
             $this->validateColor($background, 'background');
             $this->validateColor($textColor, 'text-color');
 
@@ -55,6 +56,7 @@ class CreateBanner extends Command {
                 (string)$input->getArgument('message'),
                 $this->parseTranslations($input, 'message-translations') ?? [],
                 $variant,
+                $icon,
                 $background,
                 $textColor,
                 $align,

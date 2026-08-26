@@ -16,6 +16,7 @@ trait BannerOptionsTrait {
     private function addBannerOptions(Command $command): void {
         $command
             ->addOption('variant', null, InputOption::VALUE_REQUIRED, 'Colour theme: info, success, warning, danger or custom')
+            ->addOption('icon', null, InputOption::VALUE_REQUIRED, 'Icon shown at the start of the message. One of: ' . implode(', ', $this->configService->getAllowedIcons()))
             ->addOption('background', null, InputOption::VALUE_REQUIRED, 'Custom background colour as a hex code (e.g. #ff8c00), used when --variant=custom')
             ->addOption('text-color', null, InputOption::VALUE_REQUIRED, 'Custom text colour as a hex code, used when --variant=custom')
             ->addOption('align', null, InputOption::VALUE_REQUIRED, 'Text alignment: left, center or right')
@@ -54,6 +55,7 @@ trait BannerOptionsTrait {
      */
     private function validateBannerChoices(
         string $variant,
+        string $icon,
         string $align,
         string $audience,
         string $groupsMode,
@@ -61,6 +63,7 @@ trait BannerOptionsTrait {
         string $appsMode,
     ): void {
         $this->validateChoice($variant, $this->configService->getAllowedVariants(), 'variant');
+        $this->validateChoice($icon, $this->configService->getAllowedIcons(), 'icon');
         $this->validateChoice($align, $this->configService->getAllowedTextAlignments(), 'align');
         $this->validateChoice($audience, $this->configService->getAllowedAudienceTargets(), 'audience');
         $this->validateChoice($groupsMode, $this->configService->getAllowedAudienceGroupsModes(), 'groups-mode');

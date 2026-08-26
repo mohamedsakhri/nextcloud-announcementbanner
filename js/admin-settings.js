@@ -7,6 +7,7 @@
 		message: '',
 		messageTranslations: {},
 		variant: 'info',
+		icon: 'megaphone',
 		customBackground: '',
 		customText: '',
 		textAlignment: 'left',
@@ -93,6 +94,7 @@
 			readMoreText: formData.get('readMoreText') ?? '',
 			readMoreUrl: formData.get('readMoreUrl') ?? '',
 			variant,
+			icon: (formData.get('icon') ?? 'megaphone').toString(),
 			customBackground: variant === 'custom' ? customBackground : '',
 			customText: variant === 'custom' ? customText : '',
 			textAlignment: (formData.get('textAlignment') ?? 'left').toString(),
@@ -330,6 +332,197 @@
 		syncMultiSelectPicker(selectEl);
 	}
 
+	function closeIconPicker(selectEl) {
+		const picker = selectEl?._announcementbannerIconPicker;
+		if (!picker) {
+			return;
+		}
+
+		picker.list.hidden = true;
+		picker.toggle.setAttribute('aria-expanded', 'false');
+		picker.root.classList.remove('is-open');
+	}
+
+	function openIconPicker(selectEl) {
+		const picker = selectEl?._announcementbannerIconPicker;
+		if (!picker) {
+			return;
+		}
+
+		picker.list.hidden = false;
+		picker.toggle.setAttribute('aria-expanded', 'true');
+		picker.root.classList.add('is-open');
+
+		const current = picker.options.find((option) => option.value === selectEl.value);
+		(current || picker.options[0])?.element.focus();
+	}
+
+	function syncIconPicker(selectEl) {
+		const picker = selectEl?._announcementbannerIconPicker;
+		if (!picker) {
+			return;
+		}
+
+		const value = selectEl.value;
+		const current = picker.options.find((option) => option.value === value) || picker.options[0];
+		if (current) {
+			picker.toggleGlyph.innerHTML = OCA.AnnouncementBanner.getIconMarkup(current.value);
+			picker.toggleLabel.textContent = current.label;
+		}
+
+		picker.options.forEach((option) => {
+			const isSelected = option.value === value;
+			option.element.classList.toggle('announcementbanner-icon-select__option--selected', isSelected);
+			option.element.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+		});
+	}
+
+	function enhanceIconPicker(selectEl) {
+		if (!selectEl || selectEl._announcementbannerIconPicker) {
+			return;
+		}
+
+		const container = selectEl.parentElement?.querySelector('[data-announcementbanner-icon-picker]');
+		if (!container || !window.OCA?.AnnouncementBanner?.getIconMarkup) {
+			return;
+		}
+
+		const toggle = document.createElement('button');
+		toggle.type = 'button';
+		toggle.className = 'announcementbanner-icon-select__toggle';
+		toggle.setAttribute('aria-haspopup', 'listbox');
+		toggle.setAttribute('aria-expanded', 'false');
+
+		const toggleGlyph = document.createElement('span');
+		toggleGlyph.className = 'announcementbanner-icon-select__glyph';
+		toggleGlyph.setAttribute('aria-hidden', 'true');
+
+		const toggleLabel = document.createElement('span');
+		toggleLabel.className = 'announcementbanner-icon-select__label';
+
+		const chevron = document.createElement('span');
+		chevron.className = 'announcementbanner-icon-select__chevron';
+		chevron.setAttribute('aria-hidden', 'true');
+		chevron.textContent = '⌄';
+
+		toggle.appendChild(toggleGlyph);
+		toggle.appendChild(toggleLabel);
+		toggle.appendChild(chevron);
+
+		const list = document.createElement('ul');
+		list.className = 'announcementbanner-icon-select__list';
+		list.setAttribute('role', 'listbox');
+		list.hidden = true;
+
+		const optionEntries = Array.from(selectEl.options).map((sourceOption) => {
+			const value = sourceOption.value;
+			const label = sourceOption.textContent?.trim() || value;
+
+			const item = document.createElement('li');
+			item.className = 'announcementbanner-icon-select__option';
+			item.setAttribute('role', 'option');
+			item.setAttribute('aria-selected', sourceOption.selected ? 'true' : 'false');
+			item.tabIndex = -1;
+
+			const glyph = document.createElement('span');
+			glyph.className = 'announcementbanner-icon-select__option-glyph';
+			glyph.setAttribute('aria-hidden', 'true');
+			glyph.innerHTML = OCA.AnnouncementBanner.getIconMarkup(value);
+
+			const text = document.createElement('span');
+			text.className = 'announcementbanner-icon-select__option-label';
+			text.textContent = label;
+
+			item.appendChild(glyph);
+			item.appendChild(text);
+
+			item.addEventListener('click', () => {
+				if (selectEl.value !== value) {
+					selectEl.value = value;
+					selectEl.dispatchEvent(new Event('change', { bubbles: true }));
+				}
+				closeIconPicker(selectEl);
+				toggle.focus();
+			});
+
+			list.appendChild(item);
+
+			return { value, label, element: item };
+		});
+
+		list.addEventListener('keydown', (event) => {
+			const currentIndex = optionEntries.findIndex((option) => option.element === document.activeElement);
+
+			if (event.key === 'Escape') {
+				event.preventDefault();
+				closeIconPicker(selectEl);
+				toggle.focus();
+				return;
+			}
+
+			if (event.key === 'Enter' || event.key === ' ') {
+				if (currentIndex !== -1) {
+					event.preventDefault();
+					optionEntries[currentIndex].element.click();
+				}
+				return;
+			}
+
+			let targetIndex = null;
+			switch (event.key) {
+				case 'ArrowDown':
+					targetIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % optionEntries.length;
+					break;
+				case 'ArrowUp':
+					targetIndex = currentIndex === -1 ? optionEntries.length - 1 : (currentIndex - 1 + optionEntries.length) % optionEntries.length;
+					break;
+				case 'Home':
+					targetIndex = 0;
+					break;
+				case 'End':
+					targetIndex = optionEntries.length - 1;
+					break;
+				default:
+					return;
+			}
+
+			event.preventDefault();
+			optionEntries[targetIndex].element.focus();
+		});
+
+		toggle.addEventListener('click', () => {
+			const picker = selectEl._announcementbannerIconPicker;
+			if (picker.root.classList.contains('is-open')) {
+				closeIconPicker(selectEl);
+			} else {
+				openIconPicker(selectEl);
+			}
+		});
+
+		document.addEventListener('click', (event) => {
+			if (!container.contains(event.target)) {
+				closeIconPicker(selectEl);
+			}
+		});
+
+		container.classList.add('announcementbanner-icon-select');
+		container.appendChild(toggle);
+		container.appendChild(list);
+
+		selectEl._announcementbannerIconPicker = {
+			root: container,
+			toggle,
+			toggleGlyph,
+			toggleLabel,
+			list,
+			options: optionEntries,
+		};
+
+		selectEl.addEventListener('change', () => syncIconPicker(selectEl));
+
+		syncIconPicker(selectEl);
+	}
+
 	function collectTranslations(fieldName) {
 		const rows = document.querySelectorAll(`.announcementbanner-translation-row[data-field="${fieldName}"]`);
 		const translations = {};
@@ -428,7 +621,7 @@
 		if (removeIcon) {
 			removeBtn.innerHTML = `<img src="${removeIcon}" alt="">`;
 		} else {
-			removeBtn.textContent = list.dataset.removeLabel || 'Remove';
+			removeBtn.textContent = list.dataset.removeLabel || t(APP_ID, 'Remove');
 		}
 		removeBtn.addEventListener('click', () => row.remove());
 
@@ -513,20 +706,13 @@
 		content.className = 'announcementbanner__content';
 		content.style.justifyContent = resolveContentJustify(textAlignment);
 
-		const icon = document.createElement('span');
-		icon.className = 'announcementbanner__icon';
-		icon.setAttribute('aria-hidden', 'true');
-		// Inline SVG icon (megaphone, matches app.svg)
-		icon.innerHTML = `
-			<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-				<g style="fill:currentColor">
-					<path d="M0 0h24v24H0z" fill="none"/>
-					<path d="M15.203 1.725c-.591 1.085-1.335 2.462-1.906 3.517.585.315 1.175.639 1.76.954.572-1.055 1.32-2.423 1.907-3.518-.585-.314-1.175-.638-1.76-.953zM10.404 6.131L7.113 10.943l-3.635 1.67c-1 .459-1.442 1.653-.983 2.653l.834 1.816c.459 1 .653 2.194 1.653 1.735l.908-.416 1.67 3.635 1.818-.836-1.67-3.635.908-.416 5.795.639-5.008-10.904zM20.67 6.918l-3.635 1.67.834 1.816 3.635-1.67-.834-1.816zM18.395 13.465c-.138.657-.275 1.314-.418 1.963 1.169.244 2.698.576 3.906.835.142-.648.279-1.304.421-1.953-1.209-.259-2.738-.592-3.909-.845z"/>
-					<circle cx="12.662" cy="11.867" r="1.132" />
-				</g>
-			</svg>
-		`;
-		content.appendChild(icon);
+		if (data.icon !== 'none') {
+			const icon = document.createElement('span');
+			icon.className = 'announcementbanner__icon';
+			icon.setAttribute('aria-hidden', 'true');
+			icon.innerHTML = OCA.AnnouncementBanner.getIconMarkup(data.icon);
+			content.appendChild(icon);
+		}
 
 		const message = document.createElement('div');
 		message.className = 'announcementbanner__message';
@@ -629,7 +815,7 @@
 		const response = await fetch(url, options);
 		const data = await response.json().catch(() => ({}));
 		if (!response.ok) {
-			const message = data?.message || 'Request failed';
+			const message = data?.message || t(APP_ID, 'Request failed');
 			throw new Error(message);
 		}
 		return data;
@@ -676,6 +862,7 @@
 				return map;
 			}, {})
 			: {};
+		const iconSelect = form.querySelector('#announcementbanner-icon');
 		const variantSelect = form.querySelector('#announcementbanner-variant');
 		const customBackgroundInput = form.querySelector('#announcementbanner-custom-background');
 		const customTextInput = form.querySelector('#announcementbanner-custom-text');
@@ -715,6 +902,7 @@
 		initTranslationControls();
 		enhanceMultiSelect(audienceGroupsInput);
 		enhanceMultiSelect(targetAppsInput);
+		enhanceIconPicker(iconSelect);
 
 		function toggleView(showDetail) {
 			if (overview) {
@@ -776,6 +964,10 @@
 					option.selected = selectedApps.includes(option.value);
 				});
 				syncMultiSelectPicker(targetAppsInput);
+			}
+			if (iconSelect) {
+				iconSelect.value = banner.icon || 'megaphone';
+				syncIconPicker(iconSelect);
 			}
 			if (variantSelect) {
 				variantSelect.value = banner.variant || 'info';
@@ -1185,6 +1377,10 @@
 			event.preventDefault();
 			await saveBanner();
 		});
+
+		if (iconSelect) {
+			iconSelect.addEventListener('change', () => updatePageBanner(serializeForm(form), previewContainer));
+		}
 
 		if (variantSelect) {
 			variantSelect.addEventListener('change', () => {

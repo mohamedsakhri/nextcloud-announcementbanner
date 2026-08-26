@@ -22,6 +22,7 @@ class Admin implements ISettings, IDelegatedSettings {
     public function getForm(): TemplateResponse {
         $defaultBanner = $this->configService->getDefaultBanner();
 
+        Util::addScript(Application::APP_ID, 'banner-icons');
         Util::addScript(Application::APP_ID, 'admin-settings');
         Util::addStyle(Application::APP_ID, 'banner');
         Util::addStyle(Application::APP_ID, 'admin');
@@ -37,9 +38,15 @@ class Admin implements ISettings, IDelegatedSettings {
                     'addBanner' => $this->l10n->t('Add new banner'),
                     'overviewNote' => $this->l10n->t('You can create multiple banners, schedule them, and manage them from this overview.'),
                     'overviewSortNote' => $this->l10n->t('Use the arrow buttons to change the order in which banners are shown.'),
+                    'sectionContent' => $this->l10n->t('Content'),
+                    'sectionAppearance' => $this->l10n->t('Appearance'),
+                    'sectionSchedule' => $this->l10n->t('Schedule'),
+                    'sectionTargeting' => $this->l10n->t('Targeting'),
+                    'sectionBehavior' => $this->l10n->t('Behavior'),
                     'status' => $this->l10n->t('Status'),
                     'message' => $this->l10n->t('Banner message'),
                     'messagePlaceholder' => $this->l10n->t('What do you need everyone to know?'),
+                    'icon' => $this->l10n->t('Icon'),
                     'variant' => $this->l10n->t('Color scheme'),
                     'variantRed' => $this->l10n->t('Danger'),
                     'variantGreen' => $this->l10n->t('Success'),
@@ -121,12 +128,68 @@ class Admin implements ISettings, IDelegatedSettings {
                     'zh-cn' => '中文 (简体)',
                     'zh-tw' => '中文 (繁體)',
                 ],
+                'availableIcons' => $this->configService->getAllowedIcons(),
+                'iconLabels' => $this->getIconLabels(),
                 'availableGroups' => $this->configService->getAvailableGroups(),
                 'availableApps' => $this->configService->getAvailableApps(),
                 'settings' => $defaultBanner,
             ],
             TemplateResponse::RENDER_AS_BLANK
         );
+    }
+
+    /**
+     * Human-readable, translated labels for the icon picker. Keep the key set in
+     * sync with ConfigService::getAllowedIcons(); any id missing here falls back
+     * to its raw id in the template.
+     *
+     * @return array<string, string>
+     */
+    private function getIconLabels(): array {
+        return [
+            'megaphone' => $this->l10n->t('Megaphone'),
+            'none' => $this->l10n->t('No icon'),
+            'bullhorn' => $this->l10n->t('Bullhorn'),
+            'bell' => $this->l10n->t('Bell'),
+            'bell-ring' => $this->l10n->t('Ringing bell'),
+            'alert' => $this->l10n->t('Alert'),
+            'alert-circle' => $this->l10n->t('Alert (circle)'),
+            'alert-octagon' => $this->l10n->t('Alert (octagon)'),
+            'information' => $this->l10n->t('Information'),
+            'information-outline' => $this->l10n->t('Information (outline)'),
+            'check-circle' => $this->l10n->t('Check (circle)'),
+            'check-decagram' => $this->l10n->t('Verified'),
+            'close-circle' => $this->l10n->t('Close (circle)'),
+            'close-octagon' => $this->l10n->t('Close (octagon)'),
+            'shield-alert' => $this->l10n->t('Shield alert'),
+            'shield-check' => $this->l10n->t('Shield check'),
+            'lock' => $this->l10n->t('Lock'),
+            'wrench' => $this->l10n->t('Wrench'),
+            'progress-wrench' => $this->l10n->t('Maintenance in progress'),
+            'broom' => $this->l10n->t('Broom'),
+            'server' => $this->l10n->t('Server'),
+            'server-off' => $this->l10n->t('Server offline'),
+            'database' => $this->l10n->t('Database'),
+            'cloud' => $this->l10n->t('Cloud'),
+            'cloud-alert' => $this->l10n->t('Cloud alert'),
+            'wifi-off' => $this->l10n->t('Wifi off'),
+            'sync' => $this->l10n->t('Sync'),
+            'update' => $this->l10n->t('Update'),
+            'download' => $this->l10n->t('Download'),
+            'upload' => $this->l10n->t('Upload'),
+            'calendar' => $this->l10n->t('Calendar'),
+            'calendar-clock' => $this->l10n->t('Scheduled event'),
+            'clock-alert' => $this->l10n->t('Time-sensitive'),
+            'email' => $this->l10n->t('Email'),
+            'flag' => $this->l10n->t('Flag'),
+            'star' => $this->l10n->t('Star'),
+            'gift' => $this->l10n->t('Gift'),
+            'party-popper' => $this->l10n->t('Celebration'),
+            'rocket-launch' => $this->l10n->t('Launch'),
+            'new-box' => $this->l10n->t('New'),
+            'lightning-bolt' => $this->l10n->t('Lightning bolt'),
+            'help-circle' => $this->l10n->t('Help'),
+        ];
     }
 
     public function getSection(): string {

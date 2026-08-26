@@ -1,23 +1,24 @@
 .announcementbanner-card {
 	background: var(--color-main-background, #fff);
 	border: none;
-	border-radius: 12px;
-	box-shadow: none;
-	padding: 16px;
+	border-radius: 16px;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.05);
+	padding: 24px;
 	display: flex;
 	flex-direction: column;
-	gap: 16px;
+	gap: 18px;
 	width: 100%;
 	max-width: none;
 }
 
 .announcementbanner-overview {
 	background: var(--color-main-background, #fff);
-	border-radius: 12px;
-	padding: 16px;
+	border-radius: 16px;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.05);
+	padding: 24px;
 	display: flex;
 	flex-direction: column;
-	gap: 12px;
+	gap: 14px;
 }
 
 .announcementbanner-overview__header {
@@ -52,7 +53,6 @@
 }
 
 .announcementbanner-overview__table {
-	border: 1px solid var(--color-border);
 	border-radius: 12px;
 	overflow-x: auto;
 	background: var(--color-main-background, #fff);
@@ -72,15 +72,22 @@
 	grid-template-columns: 110px minmax(240px, 1fr) minmax(180px, 220px) minmax(180px, 220px) 160px 160px 168px;
 	gap: 12px;
 	align-items: center;
-	padding: 12px 16px;
+	padding: 14px 16px;
 	border-top: 1px solid var(--color-border);
 	min-width: 1360px;
+	transition: background-color 0.15s ease;
+}
+
+.announcementbanner-overview__row:not(.announcementbanner-overview__row--header):hover {
+	background: var(--color-background-hover, #f3f4f6);
 }
 
 .announcementbanner-overview__row--header {
 	border-top: none;
+	border-radius: 12px 12px 0 0;
 	background: var(--color-background-hover);
 	font-weight: 600;
+	font-size: 13px;
 	color: var(--color-text-maxcontrast);
 }
 
@@ -161,9 +168,9 @@
 }
 
 .announcementbanner-overview__empty {
-	padding: 18px;
-	border: 1px dashed var(--color-border);
-	border-radius: 10px;
+	padding: 24px 18px;
+	border-radius: 12px;
+	background: var(--color-background-hover, #f3f4f6);
 	color: var(--color-text-maxcontrast);
 	text-align: center;
 }
@@ -441,7 +448,7 @@
 .announcementbanner-field {
 	display: grid;
 	grid-template-columns: 200px 1fr;
-	gap: 12px;
+	gap: 16px;
 	align-items: start;
 }
 
@@ -455,7 +462,10 @@
 
 .announcementbanner-field__label {
 	font-weight: 600;
+	font-size: 13px;
+	color: var(--color-text-maxcontrast, #6b7280);
 	margin: 0;
+	padding-top: 9px;
 }
 
 .announcementbanner-field__control {
@@ -487,6 +497,118 @@
 	margin: 0;
 	padding: 0;
 	border: 0;
+}
+
+.announcementbanner-icon-select {
+	position: relative;
+	width: 100%;
+	max-width: 320px;
+}
+
+.announcementbanner-icon-select__toggle {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	width: 100%;
+	min-height: var(--default-clickable-area, 44px);
+	padding: 0 12px;
+	border: 1px solid var(--color-border, #d9d9d9);
+	border-radius: 8px;
+	background: var(--color-background-hover, #f9f9f9);
+	color: var(--color-text, inherit);
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.announcementbanner-icon-select__toggle:hover {
+	box-shadow: 0 0 0 1px var(--color-border-maxcontrast, #949494);
+}
+
+.announcementbanner-icon-select__toggle:focus-visible {
+	outline: 2px solid var(--color-primary-element, #1d7bf0);
+	outline-offset: 1px;
+}
+
+.announcementbanner-icon-select.is-open .announcementbanner-icon-select__toggle {
+	border-bottom-left-radius: 0;
+	border-bottom-right-radius: 0;
+	box-shadow: 0 0 0 2px var(--color-main-text, #222);
+}
+
+.announcementbanner-icon-select__label {
+	flex: 1;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.announcementbanner-icon-select__chevron {
+	color: var(--color-text-maxcontrast, #6b7280);
+	transition: transform var(--animation-quick, 120ms) ease;
+}
+
+.announcementbanner-icon-select.is-open .announcementbanner-icon-select__chevron {
+	transform: rotate(180deg);
+}
+
+.announcementbanner-icon-select__list {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	right: 0;
+	z-index: 30;
+	margin: 0;
+	padding: 4px;
+	list-style: none;
+	max-height: 280px;
+	overflow-y: auto;
+	border: var(--border-width-input-focused, 2px) solid var(--color-main-text, #222);
+	border-top: 0;
+	border-radius: 0 0 10px 10px;
+	background: var(--color-main-background, #fff);
+}
+
+.announcementbanner-icon-select__option {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 8px 10px;
+	border-radius: 6px;
+	cursor: pointer;
+}
+
+.announcementbanner-icon-select__option:hover,
+.announcementbanner-icon-select__option:focus-visible {
+	background: var(--color-background-hover, #f3f4f6);
+	outline: none;
+}
+
+.announcementbanner-icon-select__option--selected {
+	background: var(--color-primary-element-light, #eaf3ff);
+	color: var(--color-primary-element, #1d7bf0);
+	font-weight: 600;
+}
+
+.announcementbanner-icon-select__glyph,
+.announcementbanner-icon-select__option-glyph {
+	display: inline-flex;
+	flex-shrink: 0;
+	width: 20px;
+	height: 20px;
+}
+
+.announcementbanner-icon-select__glyph svg,
+.announcementbanner-icon-select__option-glyph svg {
+	width: 20px;
+	height: 20px;
+}
+
+.announcementbanner-icon-select__option-label {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .announcementbanner-multiselect .v-select.select.nc-select-users {
@@ -646,12 +768,13 @@
 .announcementbanner-input {
 	width: 100%;
 	border: 1px solid var(--color-border, #d9d9d9);
-	border-radius: 6px;
-	padding: 8px 10px;
+	border-radius: 8px;
+	padding: 9px 12px;
 	background: var(--color-background-hover, #f9f9f9);
 	color: inherit;
 	font: inherit;
 	resize: vertical;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .announcementbanner-input:focus {
@@ -731,7 +854,7 @@
 .announcementbanner-actions {
 	display: flex;
 	justify-content: flex-end;
-	margin-top: 4px;
+	margin-top: 8px;
 }
 
 .announcementbanner-actions .primary {

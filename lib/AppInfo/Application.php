@@ -27,6 +27,7 @@ class Application extends App implements IBootstrap {
 
         $configService = $this->getContainer()->get(ConfigService::class);
         if ($configService->hasEnabledBanners()) {
+            Util::addScript(self::APP_ID, 'banner-icons');
             Util::addScript(self::APP_ID, 'banner');
             Util::addStyle(self::APP_ID, 'banner');
         }

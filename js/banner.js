@@ -185,20 +185,13 @@
 		content.className = 'announcementbanner__content';
 		content.style.justifyContent = resolveContentJustify(textAlignment);
 
-		const icon = document.createElement('span');
-		icon.className = 'announcementbanner__icon';
-		icon.setAttribute('aria-hidden', 'true');
-		// Inline SVG icon (megaphone, matches app.svg)
-		icon.innerHTML = `
-			<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-				<g style="fill:currentColor">
-					<path d="M0 0h24v24H0z" fill="none"/>
-					<path d="M15.203 1.725c-.591 1.085-1.335 2.462-1.906 3.517.585.315 1.175.639 1.76.954.572-1.055 1.32-2.423 1.907-3.518-.585-.314-1.175-.638-1.76-.953zM10.404 6.131L7.113 10.943l-3.635 1.67c-1 .459-1.442 1.653-.983 2.653l.834 1.816c.459 1 .653 2.194 1.653 1.735l.908-.416 1.67 3.635 1.818-.836-1.67-3.635.908-.416 5.795.639-5.008-10.904zM20.67 6.918l-3.635 1.67.834 1.816 3.635-1.67-.834-1.816zM18.395 13.465c-.138.657-.275 1.314-.418 1.963 1.169.244 2.698.576 3.906.835.142-.648.279-1.304.421-1.953-1.209-.259-2.738-.592-3.909-.845z"/>
-					<circle cx="12.662" cy="11.867" r="1.132" />
-				</g>
-			</svg>
-		`;
-		content.appendChild(icon);
+		if (data.icon !== 'none') {
+			const icon = document.createElement('span');
+			icon.className = 'announcementbanner__icon';
+			icon.setAttribute('aria-hidden', 'true');
+			icon.innerHTML = OCA.AnnouncementBanner.getIconMarkup(data.icon);
+			content.appendChild(icon);
+		}
 
 		const message = document.createElement('div');
 		message.className = 'announcementbanner__message';
