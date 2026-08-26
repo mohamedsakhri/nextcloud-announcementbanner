@@ -44,8 +44,6 @@
     <settings>
         <admin>OCA\AnnouncementBanner\Settings\Admin</admin>
         <admin-section>OCA\AnnouncementBanner\Settings\Section</admin-section>
-        <!-- Delegation: allow groups access to the settings -->
-        <admin-delegation>OCA\AnnouncementBanner\Settings\Admin</admin-delegation>
     </settings>
     <bootstrap>OCA\AnnouncementBanner\AppInfo\Application</bootstrap>
 </info>
