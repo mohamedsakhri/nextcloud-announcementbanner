@@ -131,4 +131,16 @@ class Admin implements ISettings, IDelegatedSettings {
     public function getPriority(): int {
         return 10;
     }
+
+    public function getName(): ?string {
+        return null;
+    }
+
+    public function getAuthorizedAppConfig(): array {
+        return [
+            Application::APP_ID => [
+                'banners',
+            ],
+        ];
+    }
 }
