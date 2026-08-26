@@ -16,6 +16,7 @@ The Announcement Banner App adds customizable notification bars at the top of yo
 - [Audience](#-audience)
 - [Page Targeting](#-page-targeting)
 - [Schedule](#-schedule)
+- [Delegation](#-delegation)
 - [Theme](#-theme)
 - [Translations](#-translations)
 - [Requirements](#-requirements)
@@ -36,6 +37,7 @@ The Announcement Banner App adds customizable notification bars at the top of yo
 - Translations for banner message and read-more label (fallback to default).
 - Live preview in the admin settings; changes take effect for users after saving.
 - Multi-language support (English, German, French, Spanish, …).
+- Settings delegation: let specific groups manage banners without giving them full Nextcloud admin rights.
 
 ## 🚀 Installation
 
@@ -106,6 +108,20 @@ Choose where each banner should appear. You can leave the page selection empty t
 ## 🕒 Schedule
 
 Scheduling is optional. Set only a start date, only an end date, or both to control the time window in which a banner is visible.
+
+## 🔐 Delegation
+
+Announcement Banner supports Nextcloud's [settings delegation](https://docs.nextcloud.com/server/latest/admin_manual/groupware/delegation.html), so you can let a group manage banners without making its members full server admins.
+
+**How to grant access:**
+
+1. As a full admin, go to **Administration settings → Delegation**.
+2. Find **Announcement banner** in the list of delegatable settings.
+3. Select one or more groups that should be allowed to manage it.
+
+Once granted, members of that group get an **Announcement banner** entry in their Administration settings, where they can create, edit, reorder, and delete banners exactly like a full admin would — but nothing else in Administration settings becomes accessible to them.
+
+**Scope of access:** delegation for this app is scoped to its own configuration only. A delegated group can manage banners, but cannot read or change settings belonging to any other app, and cannot grant itself (or anyone else) further admin rights.
 
 ## 🎨 Theme
 

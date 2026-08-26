@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2.5.0
+
+- Add settings delegation support: admins can grant specific groups access to manage banners without full server admin rights, scoped to this app's settings only.
+- Fix scheduled banners: banners past their end time or not yet started are now correctly hidden from the public banner, matching the status already shown in the admin overview.
+
 ## 2.4.3
 
 - Add support for PHP 8.5

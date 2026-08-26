@@ -18,8 +18,9 @@
  * Optional "read more" link with custom label and URL.
  * Optional translations for banner message and read-more label (fallback to default).
  * Live preview in admin settings before publishing to everyone.
- * Changes take effect immediately after saving.]]></description>
-    <version>2.4.3</version>
+ * Changes take effect immediately after saving.
+ * Delegate banner management to specific admin groups via Nextcloud's settings delegation, without granting full server admin rights.]]></description>
+    <version>2.5.0</version>
     <licence>gpl3</licence>
     <author>Mohamed Sakhri</author>
     <namespace>AnnouncementBanner</namespace>
