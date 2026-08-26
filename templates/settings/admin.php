@@ -253,6 +253,27 @@ $settings = $_['settings'];
 							data-announcementbanner-target-groups
 							<?php if (($settings['audienceTarget'] ?? 'all') !== 'groups') { print_unescaped('hidden'); } ?>
 						>
+							<?php
+								$audienceGroupsRule = (($settings['audienceGroupsMatch'] ?? 'any') === 'all' ? 'all' : 'any')
+									. '-' . (($settings['audienceGroupsMode'] ?? 'only') === 'exclude' ? 'exclude' : 'only');
+							?>
+							<label for="announcementbanner-audience-groups-rule" class="announcementbanner-subfield-label">
+								<?php p($_['labels']['audienceGroupsRuleLabel']); ?>
+							</label>
+							<select id="announcementbanner-audience-groups-rule" name="audienceGroupsRule" class="announcementbanner-input">
+								<option value="any-only" <?php if ($audienceGroupsRule === 'any-only') { print_unescaped('selected'); } ?>>
+									<?php p($_['labels']['audienceGroupsRuleAnyOnly']); ?>
+								</option>
+								<option value="all-only" <?php if ($audienceGroupsRule === 'all-only') { print_unescaped('selected'); } ?>>
+									<?php p($_['labels']['audienceGroupsRuleAllOnly']); ?>
+								</option>
+								<option value="any-exclude" <?php if ($audienceGroupsRule === 'any-exclude') { print_unescaped('selected'); } ?>>
+									<?php p($_['labels']['audienceGroupsRuleAnyExclude']); ?>
+								</option>
+								<option value="all-exclude" <?php if ($audienceGroupsRule === 'all-exclude') { print_unescaped('selected'); } ?>>
+									<?php p($_['labels']['audienceGroupsRuleAllExclude']); ?>
+								</option>
+							</select>
 							<label for="announcementbanner-audience-groups" class="announcementbanner-subfield-label">
 								<?php p($_['labels']['audienceGroupsHelp']); ?>
 							</label>

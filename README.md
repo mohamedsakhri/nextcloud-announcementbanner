@@ -28,7 +28,7 @@ The Announcement Banner App adds customizable notification bars at the top of yo
 - Overview list with status (active, scheduled, expired, disabled), preview, audience, app scope, schedule columns, and inline actions.
 - Manual banner ordering with up/down controls in the admin overview to define the display order when multiple banners are active.
 - Optional schedule: set a start time, an end time, or both to control when a banner is shown.
-- Audience targeting: show each banner to everyone, admins only, or specific groups.
+- Audience targeting: show each banner to everyone, admins only, or specific groups with an exclude mode ("everyone except these groups") and any/all group matching.
 - Page targeting: limit a banner to specific Nextcloud apps and settings pages such as `files`, `deck`, `settings` (personal settings), or `admin_settings` (administration settings).
 - Theme variants: info, success, warning, danger, custom.
 - Optional dismiss button for users.
@@ -100,6 +100,13 @@ Create and manage several banners at once. Each banner can be enabled or disable
 ## 👥 Audience
 
 Choose who should see each banner. You can publish a banner to everyone, restrict it to admins only, or target specific groups.
+
+When targeting specific groups, a **"Show this banner to"** dropdown picks exactly who within (or outside) the selected groups sees it:
+
+- **Anyone in at least one selected group** (default) — the classic "OR" match.
+- **Only people in every selected group** — requires membership in all selected groups at once ("AND" match).
+- **Everyone except people in at least one selected group** — hides the banner from anyone in any selected group; everyone else sees it (including users with no session at all).
+- **Everyone except people in every selected group** — hides the banner only from viewers who are members of _every_ selected group simultaneously; someone in just one of them still sees it.
 
 ## 🎯 Page Targeting
 

@@ -43,6 +43,14 @@ class ConfigService {
     /**
      * @var string[]
      */
+    private array $allowedAudienceGroupsModes = ['only', 'exclude'];
+    /**
+     * @var string[]
+     */
+    private array $allowedAudienceGroupsMatches = ['any', 'all'];
+    /**
+     * @var string[]
+     */
     private array $allowedTargetAppModes = ['all', 'only', 'exclude'];
 
     public function __construct(
@@ -112,6 +120,8 @@ class ConfigService {
         string $scheduleEnd,
         string $audienceTarget,
         array $audienceGroups,
+        string $audienceGroupsMode,
+        string $audienceGroupsMatch,
         string $targetAppMode,
         array $targetApps,
     ): array {
@@ -137,6 +147,8 @@ class ConfigService {
             $scheduleEnd,
             $audienceTarget,
             $audienceGroups,
+            $audienceGroupsMode,
+            $audienceGroupsMatch,
             $targetAppMode,
             $targetApps,
             $now,
@@ -167,6 +179,8 @@ class ConfigService {
         string $scheduleEnd,
         string $audienceTarget,
         array $audienceGroups,
+        string $audienceGroupsMode,
+        string $audienceGroupsMatch,
         string $targetAppMode,
         array $targetApps,
     ): array {
@@ -196,6 +210,8 @@ class ConfigService {
                 $scheduleEnd,
                 $audienceTarget,
                 $audienceGroups,
+                $audienceGroupsMode,
+                $audienceGroupsMatch,
                 $targetAppMode,
                 $targetApps,
                 $now,
@@ -407,6 +423,8 @@ class ConfigService {
         $scheduleEnd = $banner['scheduleEnd'] ?? '';
         $audienceTarget = $banner['audienceTarget'] ?? 'all';
         $audienceGroups = $banner['audienceGroups'] ?? [];
+        $audienceGroupsMode = $banner['audienceGroupsMode'] ?? 'only';
+        $audienceGroupsMatch = $banner['audienceGroupsMatch'] ?? 'any';
         $targetAppMode = $banner['targetAppMode'] ?? 'all';
         $targetApps = $banner['targetApps'] ?? [];
         $enabled = $banner['enabled'] ?? false;
@@ -427,6 +445,8 @@ class ConfigService {
             $scheduleEnd,
             $audienceTarget,
             is_array($audienceGroups) ? implode(',', $this->normalizeStringList($audienceGroups)) : '',
+            $this->normalizeAudienceGroupsMode((string)$audienceGroupsMode),
+            $this->normalizeAudienceGroupsMatch((string)$audienceGroupsMatch),
             $this->normalizeTargetAppMode((string)$targetAppMode),
             is_array($targetApps) ? implode(',', $this->normalizeAppIds($targetApps)) : '',
             $enabled ? '1' : '0',
@@ -455,6 +475,8 @@ class ConfigService {
             'scheduleEnd' => '',
             'audienceTarget' => 'all',
             'audienceGroups' => [],
+            'audienceGroupsMode' => 'only',
+            'audienceGroupsMatch' => 'any',
             'targetAppMode' => 'all',
             'targetApps' => [],
         ];
@@ -508,6 +530,8 @@ class ConfigService {
         string $scheduleEnd,
         string $audienceTarget,
         array $audienceGroups,
+        string $audienceGroupsMode,
+        string $audienceGroupsMatch,
         string $targetAppMode,
         array $targetApps,
         string $updatedAt,
@@ -525,6 +549,8 @@ class ConfigService {
         $scheduleEnd = $this->normalizeScheduleValue($scheduleEnd);
         $audienceTarget = $this->normalizeAudienceTarget($audienceTarget);
         $audienceGroups = $this->normalizeStringList($audienceGroups);
+        $audienceGroupsMode = $this->normalizeAudienceGroupsMode($audienceGroupsMode);
+        $audienceGroupsMatch = $this->normalizeAudienceGroupsMatch($audienceGroupsMatch);
         $targetAppMode = $this->normalizeTargetAppMode($targetAppMode);
         $targetApps = $this->normalizeAppIds($targetApps);
 
@@ -565,6 +591,8 @@ class ConfigService {
             'scheduleEnd' => $scheduleEnd,
             'audienceTarget' => $audienceTarget,
             'audienceGroups' => $audienceGroups,
+            'audienceGroupsMode' => $audienceGroupsMode,
+            'audienceGroupsMatch' => $audienceGroupsMatch,
             'targetAppMode' => $targetAppMode,
             'targetApps' => $targetApps,
             'createdAt' => (string)($seed['createdAt'] ?? $updatedAt),
@@ -640,6 +668,8 @@ class ConfigService {
             'scheduleEnd' => $this->normalizeStoredScheduleValue((string)($banner['scheduleEnd'] ?? '')),
             'audienceTarget' => $this->normalizeAudienceTarget((string)($banner['audienceTarget'] ?? 'all')),
             'audienceGroups' => $this->normalizeStringList(is_array($banner['audienceGroups'] ?? null) ? $banner['audienceGroups'] : []),
+            'audienceGroupsMode' => $this->normalizeAudienceGroupsMode((string)($banner['audienceGroupsMode'] ?? 'only')),
+            'audienceGroupsMatch' => $this->normalizeAudienceGroupsMatch((string)($banner['audienceGroupsMatch'] ?? 'any')),
             'targetAppMode' => $this->normalizeTargetAppMode((string)($banner['targetAppMode'] ?? 'all')),
             'targetApps' => $this->normalizeAppIds(is_array($banner['targetApps'] ?? null) ? $banner['targetApps'] : []),
             'createdAt' => (string)($banner['createdAt'] ?? $this->getNow()),
@@ -739,6 +769,24 @@ class ConfigService {
         }
 
         return $target;
+    }
+
+    private function normalizeAudienceGroupsMode(string $mode): string {
+        $mode = strtolower(trim($mode));
+        if (!in_array($mode, $this->allowedAudienceGroupsModes, true)) {
+            return 'only';
+        }
+
+        return $mode;
+    }
+
+    private function normalizeAudienceGroupsMatch(string $match): string {
+        $match = strtolower(trim($match));
+        if (!in_array($match, $this->allowedAudienceGroupsMatches, true)) {
+            return 'any';
+        }
+
+        return $match;
     }
 
     private function normalizeTargetAppMode(string $mode): string {
@@ -867,18 +915,29 @@ class ConfigService {
             return true;
         }
 
-        if ($viewerUid === null || $viewerUid === '') {
-            return false;
-        }
-
         $bannerGroups = $this->normalizeStringList(is_array($banner['audienceGroups'] ?? null) ? $banner['audienceGroups'] : []);
         if ($bannerGroups === []) {
             return false;
         }
 
+        $mode = $this->normalizeAudienceGroupsMode((string)($banner['audienceGroupsMode'] ?? 'only'));
+        $match = $this->normalizeAudienceGroupsMatch((string)($banner['audienceGroupsMatch'] ?? 'any'));
         $viewerGroups = array_map('strval', $viewerGroupIds);
 
-        return array_intersect($bannerGroups, $viewerGroups) !== [];
+        $isMember = $match === 'all'
+            ? array_diff($bannerGroups, $viewerGroups) === []
+            : array_intersect($bannerGroups, $viewerGroups) !== [];
+
+        if ($mode === 'exclude') {
+            // An anonymous/unknown viewer can't belong to the excluded groups, so they still see the banner.
+            return ($viewerUid === null || $viewerUid === '') ? true : !$isMember;
+        }
+
+        if ($viewerUid === null || $viewerUid === '') {
+            return false;
+        }
+
+        return $isMember;
     }
 
     private function matchesTargetApps(array $banner, string $currentAppId): bool {

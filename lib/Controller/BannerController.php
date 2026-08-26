@@ -86,6 +86,8 @@ class BannerController extends Controller {
                 $data['scheduleEnd'],
                 $data['audienceTarget'],
                 $data['audienceGroups'],
+                $data['audienceGroupsMode'],
+                $data['audienceGroupsMatch'],
                 $data['targetAppMode'],
                 $data['targetApps'],
             );
@@ -123,6 +125,8 @@ class BannerController extends Controller {
                 $data['scheduleEnd'],
                 $data['audienceTarget'],
                 $data['audienceGroups'],
+                $data['audienceGroupsMode'],
+                $data['audienceGroupsMatch'],
                 $data['targetAppMode'],
                 $data['targetApps'],
             );
@@ -203,7 +207,7 @@ class BannerController extends Controller {
     }
 
     /**
-     * @return array{enabled: bool, message: string, messageTranslations: array<string, string>, variant: string, customBackground: string, customText: string, textAlignment: string, dismissible: bool, readMoreText: string, readMoreTextTranslations: array<string, string>, readMoreUrl: string, scheduleStart: string, scheduleEnd: string, audienceTarget: string, audienceGroups: array<int, string>, targetAppMode: string, targetApps: array<int, string>}
+     * @return array{enabled: bool, message: string, messageTranslations: array<string, string>, variant: string, customBackground: string, customText: string, textAlignment: string, dismissible: bool, readMoreText: string, readMoreTextTranslations: array<string, string>, readMoreUrl: string, scheduleStart: string, scheduleEnd: string, audienceTarget: string, audienceGroups: array<int, string>, audienceGroupsMode: string, audienceGroupsMatch: string, targetAppMode: string, targetApps: array<int, string>}
      */
     private function extractBannerPayload(array $payload): array {
         return [
@@ -222,6 +226,8 @@ class BannerController extends Controller {
             'scheduleEnd' => (string)($payload['scheduleEnd'] ?? ''),
             'audienceTarget' => (string)($payload['audienceTarget'] ?? 'all'),
             'audienceGroups' => $this->normalizeStringList($payload['audienceGroups'] ?? []),
+            'audienceGroupsMode' => (string)($payload['audienceGroupsMode'] ?? 'only'),
+            'audienceGroupsMatch' => (string)($payload['audienceGroupsMatch'] ?? 'any'),
             'targetAppMode' => (string)($payload['targetAppMode'] ?? 'all'),
             'targetApps' => $this->normalizeStringList($payload['targetApps'] ?? []),
         ];

@@ -18,6 +18,8 @@
 		scheduleEnd: '',
 		audienceTarget: 'all',
 		audienceGroups: [],
+		audienceGroupsMode: 'only',
+		audienceGroupsMatch: 'any',
 		targetAppMode: 'all',
 		targetApps: [],
 	};
@@ -64,12 +66,28 @@
 		}
 	}
 
+	// The admin form exposes group targeting as one combined "<match>-<mode>" dropdown
+	// (e.g. "any-only", "all-exclude"), while the API still takes audienceGroupsMode/
+	// audienceGroupsMatch as two independent fields. These two helpers convert between them.
+	function parseAudienceGroupsRule(value) {
+		const [match, mode] = (value || 'any-only').split('-');
+		return {
+			mode: mode === 'exclude' ? 'exclude' : 'only',
+			match: match === 'all' ? 'all' : 'any',
+		};
+	}
+
+	function formatAudienceGroupsRule(mode, match) {
+		return `${match === 'all' ? 'all' : 'any'}-${mode === 'exclude' ? 'exclude' : 'only'}`;
+	}
+
 	function serializeForm(form) {
 		const formData = new FormData(form);
 		const variant = formData.get('variant') ?? 'info';
 		const customBackground = (formData.get('customBackground') ?? '').trim();
 		const customText = (formData.get('customText') ?? '').trim();
 		const audienceGroupsInput = form.querySelector('#announcementbanner-audience-groups');
+		const audienceGroupsRule = parseAudienceGroupsRule((formData.get('audienceGroupsRule') ?? '').toString());
 		return {
 			message: formData.get('message') ?? '',
 			readMoreText: formData.get('readMoreText') ?? '',
@@ -84,6 +102,8 @@
 			scheduleEnd: toIsoDateTime(formData.get('scheduleEnd') ?? ''),
 			audienceTarget: (formData.get('audienceTarget') ?? 'all').toString(),
 			audienceGroups: readSelectValues(audienceGroupsInput),
+			audienceGroupsMode: audienceGroupsRule.mode,
+			audienceGroupsMatch: audienceGroupsRule.match,
 			targetAppMode: (formData.get('targetAppMode') ?? 'all').toString(),
 			targetApps: readSelectValues(form.querySelector('#announcementbanner-target-apps')),
 			messageTranslations: collectTranslations('message'),
@@ -639,6 +659,7 @@
 		const scheduleEndInput = form.querySelector('#announcementbanner-schedule-end');
 		const audienceTargetInput = form.querySelector('#announcementbanner-audience-target');
 		const audienceGroupsInput = form.querySelector('#announcementbanner-audience-groups');
+		const audienceGroupsRuleInput = form.querySelector('#announcementbanner-audience-groups-rule');
 		const audienceGroupsWrapper = form.querySelector('[data-announcementbanner-target-groups]');
 		const targetAppModeInput = form.querySelector('#announcementbanner-target-app-mode');
 		const targetAppsInput = form.querySelector('#announcementbanner-target-apps');
@@ -682,6 +703,10 @@
 			audienceAll: t(APP_ID, 'Everyone'),
 			audienceAdmins: t(APP_ID, 'Admins only'),
 			audienceGroups: t(APP_ID, 'Specific groups'),
+			audienceGroupsRuleAnyOnly: t(APP_ID, 'Anyone in at least one selected group'),
+			audienceGroupsRuleAllOnly: t(APP_ID, 'Only people in every selected group'),
+			audienceGroupsRuleAnyExclude: t(APP_ID, 'Everyone except people in at least one selected group'),
+			audienceGroupsRuleAllExclude: t(APP_ID, 'Everyone except people in every selected group'),
 			allApps: root.dataset.allPagesLabel || t(APP_ID, 'All pages'),
 			onlySelectedPages: root.dataset.onlyPagesLabel || t(APP_ID, 'Show only on selected pages'),
 			allExceptSelectedPages: root.dataset.excludePagesLabel || t(APP_ID, 'Show everywhere except selected pages'),
@@ -728,6 +753,12 @@
 			}
 			if (audienceTargetInput) {
 				audienceTargetInput.value = banner.audienceTarget || 'all';
+			}
+			if (audienceGroupsRuleInput) {
+				audienceGroupsRuleInput.value = formatAudienceGroupsRule(
+					banner.audienceGroupsMode || 'only',
+					banner.audienceGroupsMatch || 'any',
+				);
 			}
 			if (audienceGroupsInput) {
 				const selectedGroups = Array.isArray(banner.audienceGroups) ? banner.audienceGroups : [];
@@ -824,23 +855,80 @@
 			return next;
 		}
 
-		function formatAudienceSummary(banner) {
+		// Shared by renderAudienceSummary/renderTargetAppsSummary: both reduce to a {mode, text}
+		// summary where mode is 'all' (no restriction), 'only', or 'exclude'. modeLabel is ignored
+		// when mode is 'all'.
+		function renderTargetSummaryBadge(summary, modeLabel) {
+			const content = document.createElement('span');
+			content.className = 'announcementbanner-target-summary';
+
+			if (summary.mode === 'all') {
+				content.textContent = summary.text;
+				content.title = summary.text;
+				return content;
+			}
+
+			content.title = `${modeLabel}: ${summary.text}`;
+
+			const assistiveText = document.createElement('span');
+			assistiveText.className = 'announcementbanner-visually-hidden';
+			assistiveText.textContent = `${modeLabel}: `;
+
+			const badge = document.createElement('span');
+			badge.className = `announcementbanner-target-summary__badge announcementbanner-target-summary__badge--${summary.mode}`;
+			badge.setAttribute('aria-hidden', 'true');
+			badge.textContent = summary.mode === 'exclude' ? '−' : '+';
+
+			const text = document.createElement('span');
+			text.className = 'announcementbanner-target-summary__text';
+			text.textContent = summary.text;
+
+			content.appendChild(assistiveText);
+			content.appendChild(badge);
+			content.appendChild(text);
+			return content;
+		}
+
+		function getAudienceSummary(banner) {
 			const audienceTarget = banner?.audienceTarget || 'all';
 			if (audienceTarget === 'admins') {
-				return labels.audienceAdmins;
+				return {
+					mode: 'all',
+					text: labels.audienceAdmins,
+				};
 			}
 
-			if (audienceTarget === 'groups') {
-				const groupNames = normalizeSelection(banner?.audienceGroups || [])
-					.map((groupId) => availableGroupLabels[groupId] || groupId);
-				if (groupNames.length > 0) {
-					return groupNames.join(', ');
-				}
-
-				return labels.audienceGroups;
+			if (audienceTarget !== 'groups') {
+				return {
+					mode: 'all',
+					text: labels.audienceAll,
+				};
 			}
 
-			return labels.audienceAll;
+			const groupNames = normalizeSelection(banner?.audienceGroups || [])
+				.map((groupId) => availableGroupLabels[groupId] || groupId);
+			const text = groupNames.length > 0 ? groupNames.join(', ') : labels.audienceGroups;
+
+			return {
+				mode: banner?.audienceGroupsMode === 'exclude' ? 'exclude' : 'only',
+				match: banner?.audienceGroupsMatch === 'all' ? 'all' : 'any',
+				text,
+			};
+		}
+
+		function renderAudienceSummary(banner) {
+			const summary = getAudienceSummary(banner);
+			if (summary.mode === 'all') {
+				return renderTargetSummaryBadge(summary, null);
+			}
+
+			const ruleLabels = {
+				'any-only': labels.audienceGroupsRuleAnyOnly,
+				'all-only': labels.audienceGroupsRuleAllOnly,
+				'any-exclude': labels.audienceGroupsRuleAnyExclude,
+				'all-exclude': labels.audienceGroupsRuleAllExclude,
+			};
+			return renderTargetSummaryBadge(summary, ruleLabels[formatAudienceGroupsRule(summary.mode, summary.match)]);
 		}
 
 		function getTargetAppsSummary(banner) {
@@ -871,37 +959,14 @@
 
 		function renderTargetAppsSummary(banner) {
 			const summary = getTargetAppsSummary(banner);
-			const content = document.createElement('span');
-			content.className = 'announcementbanner-target-summary';
-
 			if (summary.mode === 'all') {
-				content.textContent = summary.text;
-				content.title = summary.text;
-				return content;
+				return renderTargetSummaryBadge(summary, null);
 			}
 
 			const modeLabel = summary.mode === 'exclude'
 				? labels.allExceptSelectedPages
 				: labels.onlySelectedPages;
-			content.title = `${modeLabel}: ${summary.text}`;
-
-			const assistiveText = document.createElement('span');
-			assistiveText.className = 'announcementbanner-visually-hidden';
-			assistiveText.textContent = `${modeLabel}: `;
-
-			const badge = document.createElement('span');
-			badge.className = `announcementbanner-target-summary__badge announcementbanner-target-summary__badge--${summary.mode}`;
-			badge.setAttribute('aria-hidden', 'true');
-			badge.textContent = summary.mode === 'exclude' ? '\u2212' : '+';
-
-			const text = document.createElement('span');
-			text.className = 'announcementbanner-target-summary__text';
-			text.textContent = summary.text;
-
-			content.appendChild(assistiveText);
-			content.appendChild(badge);
-			content.appendChild(text);
-			return content;
+			return renderTargetSummaryBadge(summary, modeLabel);
 		}
 
 		async function persistBannerOrder(nextBanners) {
@@ -981,7 +1046,7 @@
 
 			const audienceCell = document.createElement('div');
 			audienceCell.className = 'announcementbanner-overview__audience';
-			audienceCell.textContent = formatAudienceSummary(banner);
+			audienceCell.appendChild(renderAudienceSummary(banner));
 
 			const appsCell = document.createElement('div');
 			appsCell.className = 'announcementbanner-overview__apps';
@@ -1166,6 +1231,10 @@
 
 		if (audienceGroupsInput) {
 			audienceGroupsInput.addEventListener('change', () => updatePageBanner(serializeForm(form), previewContainer));
+		}
+
+		if (audienceGroupsRuleInput) {
+			audienceGroupsRuleInput.addEventListener('change', () => updatePageBanner(serializeForm(form), previewContainer));
 		}
 
 		[customBackgroundInput, customTextInput].forEach((el) => {
