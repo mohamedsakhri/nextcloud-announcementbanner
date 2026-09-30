@@ -57,7 +57,7 @@ Install from the Nextcloud App Store: [Announcement Banner](https://apps.nextclo
 - **Text alignment**: Left, Center, Right.
 - **Enable banner** toggle.
 - **Dismiss icon** toggle (allow users to hide the banner).
-- **Read more**: Optional label + URL (shown inline with an arrow icon).
+- **Read more**: Optional label + URL (shown inline with an arrow icon, opens in a new tab). Allowed links: `https://` or `http://` URLs, `mailto:` and `tel:` links, and paths on your own Nextcloud starting with `/` (e.g. `/apps/files`). Other schemes (such as `javascript:` or `data:`), links without a scheme like `example.com`, and links containing spaces, quotes, `<`, `>`, `\` or backticks are rejected when saving. Encode spaces as `%20`, e.g. `mailto:it@example.com?subject=Hello%20IT`, and write phone numbers without spaces, e.g. `tel:+49-40-1234567`.
 - **Schedule**: Optional start date, end date, or both. Make sure to enable the banner if you want to schedule it.
 - **Audience**: Everyone, Admins only, or Specific groups.
 - **Apps**: Optional selection of target pages. Leave empty to show the banner everywhere, or target entries like Files, Deck, Personal settings (`settings`), or Administration settings (`admin_settings`).
@@ -256,7 +256,7 @@ Common options for `create` and `update`:
 | `--align` | `left`, `center`, or `right` |
 | `--start`, `--end` | Schedule window (any format understood by PHP's `DateTime`) |
 | `--no-dismiss` / `--dismiss` | Disable/enable the dismiss (close) icon |
-| `--link-text`, `--link-url` | Optional "read more" link |
+| `--link-text`, `--link-url` | Optional "read more" link; the URL must be `https://`, `http://`, `mailto:`, `tel:` or a path starting with `/` (see [Configuration](#️-configuration)) |
 | `--audience` | `all`, `admins`, or `groups` |
 | `--groups` | Comma-separated group ids, used when `--audience=groups` |
 | `--groups-mode` | `only` (restrict to these groups) or `exclude` (everyone except these groups) |

@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2.8.1
+
+- Security: fix a stored cross-site scripting (XSS) issue in the banner's "read more" link. A link URL containing a quote could break out of the link's `href` attribute and add attributes to it, such as event handlers or inline styles. Read-more links must now be an `http://`, `https://`, `mailto:` or `tel:` URL or a path starting with `/`; other values are rejected when saving, in the admin settings as well as with the occ commands. The banner and the live preview now build the link with DOM methods instead of HTML strings. Previously saved links that don't meet these rules are no longer shown.
+- Fix upgrading from the old single-banner settings (1.x): the migration to the multi-banner format failed with a type error, so banners could not be loaded after such an upgrade.
+
 ## 2.8.0
 
 - Add support for Nextcloud 35.

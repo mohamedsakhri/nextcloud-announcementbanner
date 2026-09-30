@@ -55,12 +55,6 @@
 		}
 	}
 
-	function escapeHtml(input) {
-		const div = document.createElement('div');
-		div.appendChild(document.createTextNode(input));
-		return div.innerHTML;
-	}
-
 	function normalizeTextAlignment(value) {
 		const alignment = String(value || '').trim().toLowerCase();
 		if (alignment === 'center' || alignment === 'right') {
@@ -174,6 +168,25 @@
 		return true;
 	}
 
+	// Mirrors ConfigService::isSafeUrl(): only http(s) URLs, mailto:/tel: links and same-site paths
+	function isSafeUrl(value) {
+		if (typeof value !== 'string' || value === '' || /[\x00-\x20\x7f"'<>\\`]/.test(value)) {
+			return false;
+		}
+		if (value.startsWith('/')) {
+			return !value.startsWith('//');
+		}
+		try {
+			const url = new URL(value);
+			if (url.protocol === 'mailto:' || url.protocol === 'tel:') {
+				return url.pathname !== '';
+			}
+			return (url.protocol === 'http:' || url.protocol === 'https:') && url.hostname !== '';
+		} catch (error) {
+			return false;
+		}
+	}
+
 	function buildBannerElement(data, { showDismiss = true } = {}) {
 		const banner = document.createElement('div');
 		const variant = data.variant || 'info';
@@ -197,12 +210,16 @@
 
 		const message = document.createElement('div');
 		message.className = 'announcementbanner__message';
-		let html = escapeHtml(data.message);
-		if (data.readMoreText && data.readMoreUrl) {
-			const icon = '\u2197'; // arrow
-			html += '<a class="announcementbanner__readmore" href="' + escapeHtml(data.readMoreUrl) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(data.readMoreText) + ' ' + icon + '</a>';
+		message.appendChild(document.createTextNode(data.message || ''));
+		if (data.readMoreText && isSafeUrl(data.readMoreUrl)) {
+			const link = document.createElement('a');
+			link.className = 'announcementbanner__readmore';
+			link.href = data.readMoreUrl;
+			link.target = '_blank';
+			link.rel = 'noopener noreferrer';
+			link.textContent = data.readMoreText + ' \u2197';
+			message.appendChild(link);
 		}
-		message.innerHTML = html;
 		message.style.textAlign = textAlignment;
 		content.appendChild(message);
 		banner.appendChild(content);

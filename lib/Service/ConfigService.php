@@ -626,6 +626,9 @@ class ConfigService {
         $readMoreText = trim($readMoreText);
         $readMoreTextTranslations = $this->normalizeTranslations($readMoreTextTranslations);
         $readMoreUrl = trim($readMoreUrl);
+        if ($readMoreUrl !== '' && !$this->isSafeUrl($readMoreUrl)) {
+            throw new InvalidArgumentException($this->l10n->t('The read more link must start with http://, https://, mailto:, tel: or /.'));
+        }
         $scheduleStart = $this->normalizeScheduleValue($scheduleStart);
         $scheduleEnd = $this->normalizeScheduleValue($scheduleEnd);
         $audienceTarget = $this->normalizeAudienceTarget($audienceTarget);
@@ -746,7 +749,7 @@ class ConfigService {
             'dismissible' => (bool)($banner['dismissible'] ?? true),
             'readMoreText' => trim((string)($banner['readMoreText'] ?? '')),
             'readMoreTextTranslations' => $this->normalizeTranslations(is_array($readMoreTextTranslations) ? $readMoreTextTranslations : []),
-            'readMoreUrl' => trim((string)($banner['readMoreUrl'] ?? '')),
+            'readMoreUrl' => $this->normalizeStoredUrl((string)($banner['readMoreUrl'] ?? '')),
             'scheduleStart' => $this->normalizeStoredScheduleValue((string)($banner['scheduleStart'] ?? '')),
             'scheduleEnd' => $this->normalizeStoredScheduleValue((string)($banner['scheduleEnd'] ?? '')),
             'audienceTarget' => $this->normalizeAudienceTarget((string)($banner['audienceTarget'] ?? 'all')),
@@ -783,6 +786,17 @@ class ConfigService {
             return;
         }
 
+        // Clean legacy values so buildBanner() can't throw; otherwise the migration
+        // would fail (and be retried) on every request.
+        $legacyReadMoreUrl = $this->normalizeStoredUrl($legacyReadMoreUrl);
+        $legacyScheduleStart = $this->normalizeStoredScheduleValue($legacyScheduleStart);
+        $legacyScheduleEnd = $this->normalizeStoredScheduleValue($legacyScheduleEnd);
+        if ($legacyScheduleStart !== '' && $legacyScheduleEnd !== ''
+            && new \DateTimeImmutable($legacyScheduleStart) > new \DateTimeImmutable($legacyScheduleEnd)) {
+            $legacyScheduleEnd = '';
+        }
+        $legacyEnabled = $legacyEnabled && trim($legacyMessage) !== '';
+
         $now = $this->getNow();
         $banner = $this->buildBanner(
             [
@@ -805,6 +819,8 @@ class ConfigService {
             $legacyScheduleEnd,
             'all',
             [],
+            'only',
+            'any',
             'all',
             [],
             $now,
@@ -832,6 +848,42 @@ class ConfigService {
         }
 
         return $icon;
+    }
+
+    /**
+     * Allow only absolute http(s) URLs, mailto:/tel: links and same-site paths, so a link can't carry
+     * javascript:/data: URLs or characters that break out of an HTML attribute.
+     */
+    private function isSafeUrl(string $url): bool {
+        if (preg_match('/[\x00-\x20\x7f"\'<>\\\\`]/', $url)) {
+            return false;
+        }
+
+        if (str_starts_with($url, '/')) {
+            // Reject protocol-relative URLs (//evil.example)
+            return !str_starts_with($url, '//');
+        }
+
+        $parts = parse_url($url);
+        if ($parts === false) {
+            return false;
+        }
+
+        $scheme = strtolower((string)($parts['scheme'] ?? ''));
+        if ($scheme === 'mailto' || $scheme === 'tel') {
+            return (string)($parts['path'] ?? '') !== '';
+        }
+
+        return in_array($scheme, ['http', 'https'], true) && (string)($parts['host'] ?? '') !== '';
+    }
+
+    /**
+     * Stored links that fail the check are hidden rather than rejected, so reading
+     * banners never fails.
+     */
+    private function normalizeStoredUrl(string $url): string {
+        $url = trim($url);
+        return ($url !== '' && $this->isSafeUrl($url)) ? $url : '';
     }
 
     private function normalizeColor(string $value): string {
