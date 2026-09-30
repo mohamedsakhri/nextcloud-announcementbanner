@@ -2,6 +2,8 @@
 	const APP_ID = 'announcementbanner';
 	const DISMISS_PREFIX = APP_ID + ':dismissed:';
 	let bannerContainer = null;
+	// Incremented per loadBanner call so only the newest response is rendered
+	let latestLoadId = 0;
 
 	function isAuthScreen() {
 		const body = document.body;
@@ -397,6 +399,7 @@
 			return;
 		}
 
+		const loadId = ++latestLoadId;
 		const currentAppId = getCurrentAppId();
 		const url = OC.generateUrl('/apps/' + APP_ID + '/banner');
 		const requestUrl = currentAppId !== ''
@@ -416,6 +419,11 @@
 			payload = await response.json();
 		} catch (error) {
 			console.error('Unable to load banner config', error);
+			return;
+		}
+
+		// A newer refresh started while this one was in flight; let that one render
+		if (loadId !== latestLoadId) {
 			return;
 		}
 
@@ -452,11 +460,19 @@
 		});
 
 		if (visibleBanners.length === 0) {
+			if (bannerContainer) {
+				bannerContainer.remove();
+				bannerContainer = null;
+				adjustBodyHeight(0);
+			}
 			return;
 		}
 
 		insertBanners(visibleBanners);
 	}
+
+	// Re-render when banners change (emitted by the admin settings after save/delete)
+	window._nc_event_bus?.subscribe?.('announcementbanner:banners:updated', loadBanner);
 
 	if (document.readyState === 'loading') {
 		document.addEventListener('DOMContentLoaded', loadBanner);

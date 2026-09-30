@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2.8.0
+
+- Add support for Nextcloud 35.
+- Fix the admin settings confirmation and error messages on Nextcloud 35, where `OC.Notification` was removed: they now fall back to the app's own toast, while older versions keep using the native notifications.
+- Refresh the live banner in place after saving, deleting, or reordering banners, using Nextcloud's event bus, instead of reloading the whole settings page. The "Banner saved" message now stays visible.
+- Remove the live banner from the page when no banner is visible any more after a change, and restore the page layout.
+- Fix a race where quick successive changes (e.g. reordering twice) could leave an outdated banner shown.
+
 ## 2.7.0
 
 - Add a per-banner icon picker: choose from 42 icons (the app's original megaphone, a "No icon" option, plus a curated set from Material Design Icons, Apache-2.0) shown at the start of the banner message. Available in the admin settings form, live preview, and the `--icon` option on the `announcementbanner:create`/`announcementbanner:update` occ commands.

@@ -24,6 +24,8 @@ class Admin implements ISettings, IDelegatedSettings {
 
         Util::addScript(Application::APP_ID, 'banner-icons');
         Util::addScript(Application::APP_ID, 'admin-settings');
+        // Always load the live banner here so it can refresh after a save, even if none was active on page load
+        Util::addScript(Application::APP_ID, 'banner');
         Util::addStyle(Application::APP_ID, 'banner');
         Util::addStyle(Application::APP_ID, 'admin');
 

@@ -661,6 +661,39 @@
 		});
 	}
 
+	// OC.Notification was removed in Nextcloud 35; fall back to a minimal toast there.
+	function notify(message, type = 'info') {
+		if (window.OC?.Notification?.showTemporary) {
+			window.OC.Notification.showTemporary(message, { type });
+			return;
+		}
+
+		let container = document.getElementById('announcementbanner-toasts');
+		if (!container) {
+			container = document.createElement('div');
+			container.id = 'announcementbanner-toasts';
+			container.className = 'announcementbanner-toasts';
+			document.body.appendChild(container);
+		}
+
+		const toast = document.createElement('div');
+		toast.className = `announcementbanner-toast announcementbanner-toast--${type}`;
+		toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+		toast.textContent = message;
+		container.appendChild(toast);
+
+		window.setTimeout(() => toast.remove(), 7000);
+	}
+
+	// Lets banner.js re-render the live page banner via Nextcloud's shared event bus.
+	function emitBannersUpdated() {
+		if (window._nc_event_bus?.emit) {
+			window._nc_event_bus.emit('announcementbanner:banners:updated', {});
+			return;
+		}
+		window.location.reload();
+	}
+
 	function escapeHtml(input) {
 		const div = document.createElement('div');
 		div.appendChild(document.createTextNode(input));
@@ -1182,11 +1215,12 @@
 				);
 				setReorderingState(false);
 				renderOverview(Array.isArray(data) ? data : nextBanners);
+				emitBannersUpdated();
 			} catch (error) {
 				console.error(error);
 				setReorderingState(false);
 				renderOverview(previousBanners);
-				OC.Notification.showTemporary(error?.message || t(APP_ID, 'Unable to update banner order'));
+				notify(error?.message || t(APP_ID, 'Unable to update banner order'), 'error');
 			}
 		}
 
@@ -1318,7 +1352,7 @@
 				renderOverview(Array.isArray(data) ? data : []);
 			} catch (error) {
 				console.error(error);
-				OC.Notification.showTemporary(t(APP_ID, 'Unable to load banners'));
+				notify(t(APP_ID, 'Unable to load banners'), 'error');
 			}
 		}
 
@@ -1336,7 +1370,7 @@
 				toggleView(true);
 			} catch (error) {
 				console.error(error);
-				OC.Notification.showTemporary(t(APP_ID, 'Unable to load banner'));
+				notify(t(APP_ID, 'Unable to load banner'), 'error');
 			}
 		}
 
@@ -1351,13 +1385,13 @@
 
 			try {
 				await requestJson(url, { method, body: payload });
-				OC.Notification.showTemporary(t(APP_ID, 'Banner saved'));
+				notify(t(APP_ID, 'Banner saved'), 'success');
 				await loadBanners();
 				toggleView(false);
-				window.location.reload();
+				emitBannersUpdated();
 			} catch (error) {
 				console.error(error);
-				OC.Notification.showTemporary(error?.message || t(APP_ID, 'Unable to save banner'));
+				notify(error?.message || t(APP_ID, 'Unable to save banner'), 'error');
 			}
 		}
 
@@ -1365,11 +1399,12 @@
 			const url = OC.generateUrl('/apps/' + APP_ID + '/banners/' + id);
 			try {
 				await requestJson(url, { method: 'DELETE' });
-				OC.Notification.showTemporary(t(APP_ID, 'Banner deleted'));
+				notify(t(APP_ID, 'Banner deleted'), 'success');
 				await loadBanners();
+				emitBannersUpdated();
 			} catch (error) {
 				console.error(error);
-				OC.Notification.showTemporary(t(APP_ID, 'Unable to delete banner'));
+				notify(t(APP_ID, 'Unable to delete banner'), 'error');
 			}
 		}
 
