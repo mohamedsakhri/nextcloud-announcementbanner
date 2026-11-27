@@ -382,8 +382,8 @@ $settings = $_['settings'];
 									id="announcementbanner-custom-background"
 									name="customBackground"
 									class="announcementbanner-color-input"
-									value="<?php p($settings['customBackground'] ?: '#2980b9'); ?>"
-									style="--announcementbanner-color: <?php p($settings['customBackground'] ?: '#2980b9'); ?>;"
+									value="<?php p($settings['customBackground'] ?: '#2471a3'); ?>"
+									style="--announcementbanner-color: <?php p($settings['customBackground'] ?: '#2471a3'); ?>;"
 								/>
 							</div>
 							<div class="announcementbanner-custom-color">

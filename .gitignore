@@ -16,6 +16,9 @@ Thumbs.db
 # Ignore VS Code settings
 /.vscode/
 
+# Ignore local Claude Code settings
+/.claude/
+
 # Ignore build folder
 build.sh
 /build/

@@ -56,6 +56,8 @@
 	max-width: 100%;
 	line-height: 1.4;
 	overflow-wrap: anywhere;
+	/* Keep the line breaks entered in the message textarea */
+	white-space: pre-line;
 }
 
 .announcementbanner__close {
@@ -71,7 +73,8 @@
 	appearance: none;
 	-webkit-appearance: none;
 	-moz-appearance: none;
-	color: inherit;
+	/* Nextcloud's generic button rule (button:not(.button-vue, ...)) would color the icon otherwise */
+	color: inherit !important;
 	font-size: 22px;
 	font-weight: 700;
 	text-transform: uppercase;
@@ -82,19 +85,14 @@
 	vertical-align: middle;
 	cursor: pointer;
 	opacity: 1;
-	color: var(--color-text, #fff);
 }
 
+/* The close icon follows the banner's text color, so it stays visible on every theme */
 .announcementbanner__close svg {
 	width: 16px;
 	height: 16px;
-	color: var(--color-text, #fff);
-	stroke: currentColor;
-}
-
-.announcementbanner--custom .announcementbanner__close,
-.announcementbanner--custom .announcementbanner__close svg {
 	color: inherit;
+	stroke: currentColor;
 }
 
 .announcementbanner__close:hover,
@@ -103,34 +101,35 @@
 }
 
 
+/* Text/background pairs meet WCAG AA contrast (at least 4.5:1) */
 .announcementbanner--danger {
   color: #fff;
-  background: #c0392b;
+  background: #c0392b; /* 5.4:1 */
   border-color: #a93226;
 }
 
 .announcementbanner--success {
   color: #fff;
-  background: #27ae60;
-  border-color: #229954;
+  background: #1d7a43; /* 5.4:1 */
+  border-color: #186a3b;
 }
 
 .announcementbanner--warning {
-  color: #fff;
-  background: #f39c12;
+  color: #1a1a1a;
+  background: #f39c12; /* 7.9:1 with dark text */
   border-color: #e67e22;
 }
 
 .announcementbanner--info {
   color: #fff;
-  background: #2980b9;
-  border-color: #2471a3;
+  background: #2471a3; /* 5.3:1 */
+  border-color: #1f618d;
 }
 
 .announcementbanner--custom {
   color: #fff;
-  background: #2980b9;
-  border-color: #2471a3;
+  background: #2471a3;
+  border-color: #1f618d;
 }
 
 .announcementbanner__readmore {

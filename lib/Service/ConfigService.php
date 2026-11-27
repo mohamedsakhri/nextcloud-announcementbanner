@@ -132,9 +132,14 @@ class ConfigService {
         return $this->allowedIcons;
     }
 
-    public function hasEnabledBanners(): bool {
+    /**
+     * Whether at least one banner is live right now (enabled, has a message and is within its schedule).
+     * Disabled, not-yet-started and expired banners are skipped so pages don't load the banner assets
+     * and request the banner list when there is nothing to show.
+     */
+    public function hasActiveBanners(): bool {
         foreach ($this->getBanners() as $banner) {
-            if (!empty($banner['enabled'])) {
+            if (!empty($banner['message']) && $this->getBannerStatus($banner) === 'active') {
                 return true;
             }
         }

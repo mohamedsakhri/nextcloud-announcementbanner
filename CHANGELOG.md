@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2.8.2
+
+- Accessibility: the Success, Warning and Info themes now meet the WCAG AA contrast ratio of 4.5:1. Success and Info use darker backgrounds, and Warning keeps its orange background with dark text. The default background of the Custom theme follows the new Info color. The dismiss icon now always uses the banner's text color.
+- Keep line breaks in the banner message: text entered on several lines is now shown on several lines instead of being joined into one.
+- Performance: banner scripts and styles are only loaded while at least one banner is active. Previously, a banner that was still enabled after its end time made every page load the banner assets and request the banner list without showing anything.
+- Don't load the banner on pages for guests (login page, public share links), where the banner request failed because banners are only shown to logged-in users.
+
 ## 2.8.1
 
 - Security: fix a stored cross-site scripting (XSS) issue in the banner's "read more" link. A link URL containing a quote could break out of the link's `href` attribute and add attributes to it, such as event handlers or inline styles. Read-more links must now be an `http://`, `https://`, `mailto:` or `tel:` URL or a path starting with `/`; other values are rejected when saving, in the admin settings as well as with the occ commands. The banner and the live preview now build the link with DOM methods instead of HTML strings. Previously saved links that don't meet these rules are no longer shown.

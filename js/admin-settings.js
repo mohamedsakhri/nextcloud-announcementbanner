@@ -1023,7 +1023,7 @@
 				variantSelect.value = banner.variant || 'info';
 			}
 			if (customBackgroundInput) {
-				customBackgroundInput.value = banner.customBackground || '#2980b9';
+				customBackgroundInput.value = banner.customBackground || '#2471a3';
 			}
 			if (customTextInput) {
 				customTextInput.value = banner.customText || '#ffffff';
